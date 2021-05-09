@@ -11,6 +11,7 @@ from deeploglizer.common.utils import seed_everything, set_device
 from torch.utils.data import DataLoader
 
 random_seed = 42
+device = 0
 
 sequential_partition = True
 test_ratio = 0.2
@@ -65,6 +66,6 @@ if __name__ == "__main__":
         dataset_test, batch_size=batch_size, shuffle=False, pin_memory=True
     )
 
-    model = LSTM(num_labels=num_labels, topk=topk)
+    model = LSTM(num_labels=num_labels, topk=topk, device=device)
     model.fit(dataloader_train, learning_rate=learning_rate)
     model.evaluate(dataloader_test)

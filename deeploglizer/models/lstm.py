@@ -4,9 +4,9 @@ from deeploglizer.models import ForcastBasedModel
 
 class LSTM(ForcastBasedModel):
     def __init__(
-        self, num_labels, topk=5, hidden_size=100, num_directions=2, device="cpu"
+        self, num_labels, topk=5, hidden_size=100, num_directions=2, device=-1
     ):
-        super().__init__(topk=topk)
+        super().__init__(topk=topk, device=device)
         self.hidden_size = hidden_size
         self.num_directions = num_directions
         self.rnn = nn.LSTM(

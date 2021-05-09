@@ -5,9 +5,9 @@ from torch import nn
 
 
 class ForcastBasedModel(nn.Module):
-    def __init__(self, topk, gpu=-1):
+    def __init__(self, topk, device=-1):
         super(ForcastBasedModel, self).__init__()
-        self.device = set_device(gpu)
+        self.device = set_device(device)
         self.topk = topk
 
     def evaluate(self, test_loader):
