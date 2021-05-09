@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 from collections import defaultdict
-from deeploglizer.common.utils import set_device
+from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from torch import nn
 
 

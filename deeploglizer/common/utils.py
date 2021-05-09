@@ -4,6 +4,10 @@ import os
 import numpy as np
 
 
+def tensor2flatten_arr(tensor):
+    return tensor.data.cpu().numpy().reshape(-1)
+
+
 def seed_everything(seed=1234):
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
