@@ -2,40 +2,69 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append('../')
-from loglizer import dataloader
-from loglizer.models import DeepLog
-from loglizer.preprocessing import Vectorizer, Iterator
 
+sys.path.append("../")
+from deeploglizer.models import LSTM
+from deeploglizer.common.dataloader import load_HDFS, log_dataset
+from deeploglizer.common.preprocess import FeatureExtractor
+from deeploglizer.common.utils import seed_everything, set_device
+from torch.utils.data import DataLoader
 
+random_seed = 42
+
+sequential_partition = True
+test_ratio = 0.2
+window_size = 10
+stride = 1
+
+topk = 5
 batch_size = 32
+epoches = 2
+learning_rate = 1.0e-3
+
 hidden_size = 32
 num_directions = 2
-topk = 5
-train_ratio = 0.2
-window_size = 10
-epoches = 2
-num_workers = 2
-device = 0 
 
-struct_log = '../data/HDFS/HDFS_100k.log_structured.csv' # The structured log file
-label_file = '../data/HDFS/anomaly_label.csv' # The anomaly label file
+max_token_len = 50  # max #token for each event [semantic only]
+min_token_count = 1  # min # occurrence of token for each event [semantic only]
 
-if __name__ == '__main__':
-    (x_train, window_y_train, y_train), (x_test, window_y_test, y_test) = dataloader.load_HDFS(struct_log, label_file=label_file, window='session', window_size=window_size, train_ratio=train_ratio, split_type='uniform')
-    
-    feature_extractor = Vectorizer()
-    train_dataset = feature_extractor.fit_transform(x_train, window_y_train, y_train)
-    test_dataset = feature_extractor.transform(x_test, window_y_test, y_test)
 
-    train_loader = Iterator(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers).iter
-    test_loader = Iterator(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers).iter
+log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
+label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
-    model = DeepLog(num_labels=feature_extractor.num_labels, hidden_size=hidden_size, num_directions=num_directions, topk=topk, device=device)
-    model.fit(train_loader, epoches)
+if __name__ == "__main__":
+    seed_everything(random_seed)
 
-    print('Train validation:')
-    metrics = model.evaluate(train_loader)
+    session_train, session_test = load_HDFS(
+        log_file,
+        label_file=label_file,
+    )
 
-    print('Test validation:')
-    metrics = model.evaluate(test_loader)
+    ext = FeatureExtractor(
+        label_types="next_log",  # "none", "next_log", "anomaly"
+        feature_types=["sequentials"],
+        window_types="sliding",
+        window_size=window_size,
+        stride=stride,
+        max_token_len=max_token_len,
+        min_token_count=min_token_count,
+    )
+
+    ext.fit_transform(session_train)
+    ext.transform(session_test, datatype="test")
+
+    num_labels = ext.meta_data["num_labels"]
+
+    dataset_train = log_dataset(session_train)
+    dataloader_train = DataLoader(
+        dataset_train, batch_size=batch_size, shuffle=True, pin_memory=True
+    )
+
+    dataset_test = log_dataset(session_test)
+    dataloader_test = DataLoader(
+        dataset_test, batch_size=batch_size, shuffle=False, pin_memory=True
+    )
+
+    model = LSTM(num_labels=num_labels, topk=topk)
+    model.fit(dataloader_train, learning_rate=learning_rate)
+    model.evaluate(dataloader_test)
