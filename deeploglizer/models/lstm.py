@@ -41,7 +41,7 @@ class LSTM(ForcastBasedModel):
         )
         self.criterion = nn.CrossEntropyLoss()
         self.prediction_layer = nn.Linear(
-            self.hidden_size * self.num_directions, num_labels + 1
+            self.hidden_size * self.num_directions, num_labels
         )
 
     def forward(self, input_dict):

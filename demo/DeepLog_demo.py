@@ -23,7 +23,7 @@ stride = 1
 
 topk = 5
 batch_size = 32
-epoches = 2
+epoches = 20
 learning_rate = 1.0e-3
 use_tfidf = True
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         topk=topk,
         device=device,
     )
-    model.fit(dataloader_train, learning_rate=learning_rate)
+    model.fit(dataloader_train, epoches=epoches, learning_rate=learning_rate)
 
     print("Evaluating train:")
     eval_results = model.evaluate(dataloader_train)
