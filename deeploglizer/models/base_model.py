@@ -66,7 +66,7 @@ class ForcastBasedModel(nn.Module):
             y_pred = []
             store_dict = defaultdict(list)
             for batch_input in test_loader:
-                return_dict = self.forward(batch_input)
+                return_dict = self.forward(self.__input2device(batch_input))
                 y_pred = return_dict["y_pred"]
                 y_pred_topk = torch.topk(y_pred, self.topk)[1]  # b x topk
 
