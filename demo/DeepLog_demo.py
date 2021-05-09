@@ -19,7 +19,7 @@ window_size = 10
 stride = 1
 
 topk = 5
-batch_size = 32
+batch_size = 512
 epoches = 2
 learning_rate = 1.0e-3
 
