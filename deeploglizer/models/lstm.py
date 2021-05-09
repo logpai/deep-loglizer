@@ -1,16 +1,40 @@
 from torch import nn
 from deeploglizer.models import ForcastBasedModel
 
+from IPython import embed
+
 
 class LSTM(ForcastBasedModel):
     def __init__(
-        self, num_labels, topk=5, hidden_size=100, num_directions=2, device=-1
+        self,
+        meta_data,
+        feature_type="sequentials",
+        topk=5,
+        use_tfidf=False,
+        hidden_size=100,
+        num_directions=2,
+        embedding_dim=16,
+        pretrain_matrix=None,
+        freeze=False,
+        device=-1,
     ):
-        super().__init__(topk=topk, device=device)
+        super().__init__(
+            meta_data=meta_data,
+            feature_type=feature_type,
+            topk=topk,
+            use_tfidf=use_tfidf,
+            embedding_dim=embedding_dim,
+            pretrain_matrix=pretrain_matrix,
+            freeze=freeze,
+            device=device,
+        )
+        num_labels = meta_data["num_labels"]
+        self.feature_type = feature_type
         self.hidden_size = hidden_size
         self.num_directions = num_directions
+        self.use_tfidf = use_tfidf
         self.rnn = nn.LSTM(
-            input_size=1,
+            input_size=embedding_dim,
             hidden_size=self.hidden_size,
             batch_first=True,
             bidirectional=(self.num_directions == 2),
@@ -21,9 +45,15 @@ class LSTM(ForcastBasedModel):
         )
 
     def forward(self, input_dict):
-        y = input_dict["window_labels"].long().view(-1).to(self.device)
+        y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
-        x = input_dict["features"].view(self.batch_size, -1, 1).to(self.device)
+        x = input_dict["features"]
+        x = self.embedder(x)
+
+        if self.feature_type == "semantics":
+            if not self.use_tfidf:
+                x = x.sum(dim=-2)  # add tf-idf
+
         outputs, hidden = self.rnn(x.float())
         representation = outputs.sum(dim=1)
         logits = self.prediction_layer(representation)
