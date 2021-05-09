@@ -93,7 +93,7 @@ class ForcastBasedModel(nn.Module):
             )
             y = (session_df["session_labels"] > 0).astype(int)
             pred = (session_df["window_anomaly"] > 0).astype(int)
-            window_topk_acc = store_df["window_anomaly"].sum() / len(store_df)
+            window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
             eval_results = {
                 "f1": f1_score(y, pred),
                 "rc": recall_score(y, pred),
