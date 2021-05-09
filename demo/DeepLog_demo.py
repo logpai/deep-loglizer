@@ -25,7 +25,7 @@ topk = 5
 batch_size = 32
 epoches = 20
 learning_rate = 1.0e-3
-use_tfidf = True
+use_tfidf = False
 
 hidden_size = 32
 num_directions = 2
