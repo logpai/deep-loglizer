@@ -1,5 +1,6 @@
 import torch
 import pandas as pd
+from collections import defaultdict
 from deeploglizer.common.utils import set_device
 from torch import nn
 
