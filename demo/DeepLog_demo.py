@@ -15,7 +15,7 @@ from IPython import embed
 random_seed = 42
 device = 0
 
-feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
+feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = True
 test_ratio = 0.2
 window_size = 10
