@@ -57,7 +57,11 @@ class ForcastBasedModel(nn.Module):
 
     def fit(self, train_loader, epoches=10, learning_rate=1.0e-3):
         self.to(self.device)
-        print("Start training on {} batches.".format(len(train_loader)))
+        print(
+            "Start training on {} batches with {}.".format(
+                len(train_loader), self.device
+            )
+        )
         for epoch in range(epoches):
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
