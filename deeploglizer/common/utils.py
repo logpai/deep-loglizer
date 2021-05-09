@@ -13,7 +13,7 @@ def seed_everything(seed=1234):
 
 def set_device(device=-1):
     if device != -1 and torch.cuda.is_available():
-        device = torch.device("cuda: " + str(device))
+        device = torch.device("cuda:" + str(device))
     else:
         device = torch.device("cpu")
     return device
