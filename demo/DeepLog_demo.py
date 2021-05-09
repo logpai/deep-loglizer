@@ -79,6 +79,11 @@ if __name__ == "__main__":
         device=device,
     )
     model.fit(dataloader_train, learning_rate=learning_rate)
-    eval_results = model.evaluate(dataloader_test)
 
+    print("Evaluating train:")
+    eval_results = model.evaluate(dataloader_train)
+    print(eval_results)
+
+    print("Evaluating test:")
+    eval_results = model.evaluate(dataloader_test)
     print(eval_results)
