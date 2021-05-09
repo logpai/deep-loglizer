@@ -68,4 +68,6 @@ if __name__ == "__main__":
 
     model = LSTM(num_labels=num_labels, topk=topk, device=device)
     model.fit(dataloader_train, learning_rate=learning_rate)
-    model.evaluate(dataloader_test)
+    eval_results = model.evaluate(dataloader_test)
+
+    print(eval_results)
