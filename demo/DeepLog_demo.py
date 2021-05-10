@@ -16,7 +16,7 @@ random_seed = 42
 device = 0
 
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
-sequential_partition = True
+sequential_partition = False
 test_ratio = 0.2
 window_size = 10
 stride = 10
