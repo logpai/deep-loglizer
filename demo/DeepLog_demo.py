@@ -15,15 +15,15 @@ from IPython import embed
 random_seed = 42
 device = 0
 
-feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
+feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = True
 test_ratio = 0.2
 window_size = 10
-stride = 3
+stride = 5
 
-topk = 9
+topk = 3
 batch_size = 512
-epoches = 20
+epoches = 2
 learning_rate = 1.0e-3
 use_tfidf = False
 

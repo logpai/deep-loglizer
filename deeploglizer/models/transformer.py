@@ -42,7 +42,7 @@ class Transformer(ForcastBasedModel):
         )
 
         self.criterion = nn.CrossEntropyLoss()
-        self.prediction_layer = nn.Linear(self.hidden_size * nhead, num_labels)
+        self.prediction_layer = nn.Linear(embedding_dim, num_labels)
 
     def forward(self, input_dict):
         y = input_dict["window_labels"].long().view(-1)
@@ -53,10 +53,13 @@ class Transformer(ForcastBasedModel):
         if self.feature_type == "semantics":
             if not self.use_tfidf:
                 x = x.sum(dim=-2)  # add tf-idf
-        x_transformed = self.transformer_encoder(x.transpose(1, 0))
-        embed()
-        outputs, hidden = self.transformer_encoder(x)
-        representation = outputs.sum(dim=1)
+
+        x_trans = x.transpose(1, 0)
+        cls_expand = self.cls.expand(-1, self.batch_size, -1)
+        embedding_with_cls = torch.cat([cls_expand, x_trans], dim=0)
+        x_transformed = self.transformer_encoder(embedding_with_cls)
+        representation = x_transformed[0]
+
         logits = self.prediction_layer(representation)
         y_pred = logits.softmax(dim=-1)
         loss = self.criterion(logits, y)
