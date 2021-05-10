@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from deeploglizer.models import ForcastBasedModel
 
@@ -34,7 +35,7 @@ class Transformer(ForcastBasedModel):
         self.hidden_size = hidden_size
         self.use_tfidf = use_tfidf
 
-        self.cls = torch.zeros(1, embedding_dim).to(self.device)
+        self.cls = torch.zeros(1, 1, embedding_dim).to(self.device)
         encoder_layer = nn.TransformerEncoderLayer(embedding_dim, nhead, hidden_size)
         self.transformer_encoder = nn.TransformerEncoder(
             encoder_layer, num_layers=num_layers

@@ -21,9 +21,9 @@ test_ratio = 0.2
 window_size = 32
 stride = 5
 
-topk = 1
+topk = 5
 batch_size = 512
-epoches = 10
+epoches = 20
 learning_rate = 1.0e-3
 use_tfidf = False
 
