@@ -109,7 +109,7 @@ class FeatureExtractor:
 
     def __init__(
         self,
-        label_types="next_log",  # "none", "next_log", "anomaly"
+        label_type="next_log",  # "none", "next_log", "anomaly"
         feature_type="sequentials",
         window_type="sliding",
         window_size=None,
@@ -119,7 +119,7 @@ class FeatureExtractor:
         pretrain_path=None,
         use_tfidf=False,
     ):
-        self.label_types = label_types
+        self.label_type = label_type
         self.feature_type = feature_type
         self.window_type = window_type
         self.window_size = window_size
@@ -139,13 +139,13 @@ class FeatureExtractor:
                 window_labels = []
                 while i + self.window_size < template_len:
                     windows.append(templates[i : i + self.window_size])
-                    if self.label_types == "next_log":
+                    if self.label_type == "next_log":
                         window_labels.append(
                             self.log2id_train.get(templates[i + self.window_size], 1)
                         )
-                    elif self.label_types == "anomaly":
+                    elif self.label_type == "anomaly":
                         window_labels.append(data_dict["label"])
-                    elif self.label_types == "none":
+                    elif self.label_type == "none":
                         window_labels.append(None)
                     i += stride
                 session_dict[session_id]["windows"] = windows
@@ -198,9 +198,9 @@ class FeatureExtractor:
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
 
-        if self.label_types == "next_log":
+        if self.label_type == "next_log":
             self.meta_data["num_labels"] = len(self.log2id_train)
-        elif self.label_types == "anomaly":
+        elif self.label_type == "anomaly":
             self.meta_data["num_labels"] = 2
 
         if self.feature_type == "semantics":

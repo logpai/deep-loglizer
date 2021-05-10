@@ -18,10 +18,10 @@ device = 0
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
-window_size = 10
-stride = 10
+window_size = 15
+stride = 15
 
-topk = 9
+topk = 15
 batch_size = 512
 epoches = 1
 learning_rate = 1.0e-3
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     )
 
     ext = FeatureExtractor(
-        label_types="next_log",  # "none", "next_log", "anomaly"
+        label_type="next_log",  # "none", "next_log", "anomaly"
         feature_type=feature_type,  # "sequentials", "semantics", "quantitatives"
         window_type="sliding",
         window_size=window_size,
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     dataset_test = log_dataset(session_test, feature_type=feature_type)
     dataloader_test = DataLoader(
-        dataset_test, batch_size=batch_size, shuffle=False, pin_memory=True
+        dataset_test, batch_size=4096, shuffle=False, pin_memory=True
     )
 
     model = LSTM(
