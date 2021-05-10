@@ -35,15 +35,14 @@ min_token_count = 1  # min # occurrence of token for each event [semantic only]
 pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
-log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
+log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
 label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 if __name__ == "__main__":
     seed_everything(random_seed)
 
     session_train, session_test = load_HDFS(
-        log_file,
-        label_file=label_file,
+        log_file, label_file=label_file, test_ratio=test_ratio, random_seed=random_seed
     )
 
     ext = FeatureExtractor(
