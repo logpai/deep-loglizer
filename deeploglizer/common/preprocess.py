@@ -129,7 +129,7 @@ class FeatureExtractor:
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
 
-    def __generate_windows(self, session_dict):
+    def __generate_windows(self, session_dict, window_size):
         for session_id, data_dict in session_dict.items():
             if self.window_type == "sliding":
                 i = 0
@@ -137,11 +137,11 @@ class FeatureExtractor:
                 template_len = len(templates)
                 windows = []
                 window_labels = []
-                while i + self.window_size < template_len:
-                    windows.append(templates[i : i + self.window_size])
+                while i + window_size < template_len:
+                    windows.append(templates[i : i + window_size])
                     if self.label_types == "next_log":
                         window_labels.append(
-                            self.log2id_train.get(templates[i + self.window_size], 1)
+                            self.log2id_train.get(templates[i + window_size], 1)
                         )
                     elif self.label_types == "anomaly":
                         window_labels.append(data_dict["label"])
@@ -229,7 +229,10 @@ class FeatureExtractor:
             print(f"{len(ulog_new)} new templates show while testing.")
 
         # generate windows, each window contains logid only
-        self.__generate_windows(session_dict)
+        if datatype == "train":
+            self.__generate_windows(session_dict, self.window_size)
+        else:
+            self.__generate_windows(session_dict, 1)
 
         # for each window
         for session_id, data_dict in session_dict.items():
