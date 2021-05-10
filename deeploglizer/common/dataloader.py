@@ -96,7 +96,7 @@ def load_HDFS(
     )
 
     session_train = {
-        k: session_dict[k] for k in session_id_train if session_dict[k]["Label"] == 0
+        k: session_dict[k] for k in session_id_train if session_dict[k]["label"] == 0
     }
     session_test = {k: session_dict[k] for k in session_id_test}
 
