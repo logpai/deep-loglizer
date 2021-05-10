@@ -72,7 +72,7 @@ def load_HDFS(
                 blk_count += 1
                 session_dict[blk_Id] = defaultdict(list)
             session_dict[blk_Id]["templates"].append(row[column_idx["EventTemplate"]])
-        if blk_count > 10000:
+        if blk_count > 20000:
             break
 
     # assign labels
