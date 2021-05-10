@@ -1,9 +1,11 @@
+import os
 import io
 import itertools
 import numpy as np
 from collections import Counter, defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+from sklearn.base import BaseEstimator
+import hashlib
 import pickle
 
 
@@ -100,7 +102,7 @@ class Vocab:
         return idx_list
 
 
-class FeatureExtractor:
+class FeatureExtractor(BaseEstimator):
     """
     feature_type: "sequentials", "semantics", "quantitatives"
     window_type: "session", "sliding"
@@ -118,6 +120,7 @@ class FeatureExtractor:
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
+        cache=True,
     ):
         self.label_type = label_type
         self.feature_type = feature_type
@@ -126,8 +129,16 @@ class FeatureExtractor:
         self.stride = stride
         self.pretrain_path = pretrain_path
         self.use_tfidf = use_tfidf
+        self.max_token_len = max_token_len
+        self.min_token_count = min_token_count
+        self.cache = cache
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
+
+        if cache:
+            identifier = hashlib.md5(str(self.get_params()).encode("utf-8"))
+            self.cache_dir = os.path.join("./cache", identifier)
+            os.makedirs(self.cache_dir, exist_ok=True)
 
     def __generate_windows(self, session_dict, stride):
         window_count = 0

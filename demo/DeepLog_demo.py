@@ -19,7 +19,7 @@ feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
 window_size = 10
-stride = 3
+stride = 10
 
 topk = 10
 batch_size = 512
@@ -27,9 +27,9 @@ epoches = 10
 learning_rate = 1.0e-3
 use_tfidf = False
 
-hidden_size = 64
+hidden_size = 128
 num_directions = 2
-embedding_dim = 1
+embedding_dim = 16
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
