@@ -198,6 +198,8 @@ class FeatureExtractor:
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
 
+        print("{} tempaltes are found.".format(len(self.log2id_train)))
+
         if self.label_type == "next_log":
             self.meta_data["num_labels"] = len(self.log2id_train)
         elif self.label_type == "anomaly":

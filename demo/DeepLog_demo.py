@@ -21,7 +21,7 @@ test_ratio = 0.2
 window_size = 10
 stride = 1
 
-topk = 20
+topk = 15
 batch_size = 512
 epoches = 30
 learning_rate = 1.0e-3
