@@ -81,7 +81,7 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
 
-            for topk in range(1, 16):
+            for topk in range(1, self.topk):
                 store_df = pd.DataFrame(store_dict)
                 store_df["window_anomaly"] = store_df.apply(
                     lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1

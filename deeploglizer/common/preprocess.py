@@ -232,7 +232,7 @@ class FeatureExtractor:
         if datatype == "train":
             self.__generate_windows(session_dict, self.stride)
         else:
-            self.__generate_windows(session_dict, 5)
+            self.__generate_windows(session_dict, 1)
 
         # for each window
         for session_id, data_dict in session_dict.items():
