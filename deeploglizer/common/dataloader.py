@@ -62,14 +62,18 @@ def load_HDFS(
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     session_dict = OrderedDict()
 
+    blk_count = 0
     column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
     for row in struct_log.values:
         blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
         blkId_set = set(blkId_list)
         for blk_Id in blkId_set:
             if blk_Id not in session_dict:
+                blk_count += 1
                 session_dict[blk_Id] = defaultdict(list)
             session_dict[blk_Id]["templates"].append(row[column_idx["EventTemplate"]])
+        if blk_count > 10000:
+            break
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
