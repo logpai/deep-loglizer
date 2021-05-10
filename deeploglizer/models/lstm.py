@@ -55,7 +55,7 @@ class LSTM(ForcastBasedModel):
                 x = x.sum(dim=-2)  # add tf-idf
 
         outputs, hidden = self.rnn(x.float())
-        representation = outputs.sum(dim=1)
+        representation = outputs.mean(dim=1)
         logits = self.prediction_layer(representation)
         y_pred = logits.softmax(dim=-1)
         loss = self.criterion(logits, y)

@@ -15,6 +15,7 @@ from IPython import embed
 random_seed = 42
 device = 0
 
+label_type = "next_log"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     )
 
     ext = FeatureExtractor(
-        label_type="next_log",  # "none", "next_log", "anomaly"
+        label_type=label_type,  # "none", "next_log", "anomaly"
         feature_type=feature_type,  # "sequentials", "semantics", "quantitatives"
         window_type="sliding",
         window_size=window_size,
