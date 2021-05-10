@@ -96,6 +96,6 @@ def load_HDFS(
     session_train = {k: session_dict[k] for k in session_id_train}
     session_test = {k: session_dict[k] for k in session_id_test}
 
-    print("# train sessions: {}".format(session_train))
-    print("# test sessions: {}".format(session_test))
+    print("# train sessions: {}".format(len(session_train)))
+    print("# test sessions: {}".format(len(session_test)))
     return session_train, session_test
