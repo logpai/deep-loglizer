@@ -21,7 +21,7 @@ test_ratio = 0.2
 window_size = 10
 stride = 1
 
-topk = 15
+topk = 10
 batch_size = 512
 epoches = 30
 learning_rate = 1.0e-3
@@ -36,8 +36,8 @@ min_token_count = 1  # min # occurrence of token for each event [semantic only]
 pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
-log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
-# log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
+# log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
+log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
 label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 if __name__ == "__main__":

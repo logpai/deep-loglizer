@@ -148,6 +148,15 @@ class FeatureExtractor:
                     elif self.label_type == "none":
                         window_labels.append(None)
                     i += stride
+                else:
+                    if self.label_type == "next_log":
+                        window = templates[i:-1]
+                        window.extend(
+                            ["padding_token"] * (self.window_size - len(window))
+                        )
+                        windows.append(window)
+                        window_labels.append(self.log2id_train.get(templates[-1], 1))
+
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
             elif self.window_type == "session":
