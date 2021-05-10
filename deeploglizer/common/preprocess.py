@@ -129,7 +129,7 @@ class FeatureExtractor:
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
 
-    def __generate_windows(self, session_dict, window_size):
+    def __generate_windows(self, session_dict, stride):
         for session_id, data_dict in session_dict.items():
             if self.window_type == "sliding":
                 i = 0
@@ -137,17 +137,17 @@ class FeatureExtractor:
                 template_len = len(templates)
                 windows = []
                 window_labels = []
-                while i + window_size < template_len:
-                    windows.append(templates[i : i + window_size])
+                while i + self.window_size < template_len:
+                    windows.append(templates[i : i + self.window_size])
                     if self.label_types == "next_log":
                         window_labels.append(
-                            self.log2id_train.get(templates[i + window_size], 1)
+                            self.log2id_train.get(templates[i + self.window_size], 1)
                         )
                     elif self.label_types == "anomaly":
                         window_labels.append(data_dict["label"])
                     elif self.label_types == "none":
                         window_labels.append(None)
-                    i += self.stride
+                    i += stride
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
             elif self.window_type == "session":
@@ -230,7 +230,7 @@ class FeatureExtractor:
 
         # generate windows, each window contains logid only
         if datatype == "train":
-            self.__generate_windows(session_dict, self.window_size)
+            self.__generate_windows(session_dict, self.stride)
         else:
             self.__generate_windows(session_dict, 1)
 
