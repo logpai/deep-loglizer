@@ -72,8 +72,8 @@ def load_HDFS(
                 blk_count += 1
                 session_dict[blk_Id] = defaultdict(list)
             session_dict[blk_Id]["templates"].append(row[column_idx["EventTemplate"]])
-        # if blk_count > 30000:
-        #     break
+        if blk_count > 30000:
+            break
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
