@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 import sys
 
 sys.path.append("../")
@@ -27,8 +27,8 @@ epoches = 35
 learning_rate = 1.0e-3
 use_tfidf = False
 
-hidden_size = 16
-num_directions = 1
+hidden_size = 64
+num_directions = 2
 embedding_dim = 3
 
 max_token_len = 50  # max #token for each event [semantic only]
@@ -37,7 +37,8 @@ pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
 log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
-# log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
+if not os.path.isfile(log_file):
+    log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
 label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 if __name__ == "__main__":
@@ -86,12 +87,17 @@ if __name__ == "__main__":
         topk=topk,
         device=device,
     )
-    model.fit(dataloader_train, epoches=epoches, learning_rate=learning_rate)
+    model.fit(
+        dataloader_train,
+        test_loader=dataloader_test,
+        epoches=epoches,
+        learning_rate=learning_rate,
+    )
 
     # print("Evaluating train:")
     # eval_results = model.evaluate(dataloader_train, "train")
     # print(eval_results)
 
-    print("Evaluating test:")
-    eval_results = model.evaluate(dataloader_test)
-    print(eval_results)
+    # print("Evaluating test:")
+    # eval_results = model.evaluate(dataloader_test)
+    # print(eval_results)

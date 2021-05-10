@@ -84,6 +84,8 @@ class ForcastBasedModel(nn.Module):
 
             store_df = pd.DataFrame(store_dict)
             store_df.to_csv(f"store_df_{dtype}.csv", index=False)
+            best_result = None
+            best_f1 = -float("inf")
             for topk in range(1, self.topk):
                 store_df["window_anomaly"] = store_df.apply(
                     lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
@@ -104,13 +106,17 @@ class ForcastBasedModel(nn.Module):
                     "pc": precision_score(y, pred),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
-                print(eval_results)
+
+                if eval_results["f1"] >= best_f1:
+                    best_result = eval_results
+                    best_f1 = eval_results["f1"]
+            print(best_result)
             return eval_results
 
     def __input2device(self, batch_input):
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
-    def fit(self, train_loader, epoches=10, learning_rate=1.0e-3):
+    def fit(self, train_loader, test_loader=None, epoches=10, learning_rate=1.0e-3):
         self.to(self.device)
         print(
             "Start training on {} batches with {}.".format(
@@ -136,3 +142,5 @@ class ForcastBasedModel(nn.Module):
                     epoch + 1, epoches, epoch_loss
                 )
             )
+            if test_loader is not None:
+                self.evaluate(test_loader)

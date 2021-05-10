@@ -166,7 +166,7 @@ class FeatureExtractor:
                 session_dict[session_id]["window_labels"] = [data_dict["label"]]
                 window_count += 1
 
-            print("{} sliding windows generated.".format(window_count))
+        print("{} sliding windows generated.".format(window_count))
 
     def __windows2quantitative(self, windows):
         total_features = []
