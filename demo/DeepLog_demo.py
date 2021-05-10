@@ -23,7 +23,7 @@ stride = 1
 
 topk = 10
 batch_size = 512
-epoches = 5
+epoches = 30
 learning_rate = 1.0e-3
 use_tfidf = False
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     model.fit(dataloader_train, epoches=epoches, learning_rate=learning_rate)
 
     print("Evaluating train:")
-    eval_results = model.evaluate(dataloader_train)
+    eval_results = model.evaluate(dataloader_train, "train")
     print(eval_results)
 
     print("Evaluating test:")

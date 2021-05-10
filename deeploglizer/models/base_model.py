@@ -60,7 +60,7 @@ class ForcastBasedModel(nn.Module):
                 use_tfidf=use_tfidf,
             )
 
-    def evaluate(self, test_loader):
+    def evaluate(self, test_loader, dtype="test"):
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -81,8 +81,9 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
 
+            store_df = pd.DataFrame(store_dict)
+            store_df.to_csv(f"store_df_{dtype}.csv", index=False)
             for topk in range(1, self.topk):
-                store_df = pd.DataFrame(store_dict)
                 store_df["window_anomaly"] = store_df.apply(
                     lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
                 ).astype(int)
@@ -92,6 +93,7 @@ class ForcastBasedModel(nn.Module):
                     .groupby("session_idx", as_index=False)
                     .sum()
                 )
+                session_df.to_csv(f"sess_df_{topk}.csv", index=False)
                 y = (session_df["session_labels"] > 0).astype(int)
                 pred = (session_df["window_anomaly"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
