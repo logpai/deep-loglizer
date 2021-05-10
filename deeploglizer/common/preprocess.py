@@ -120,7 +120,7 @@ class FeatureExtractor(BaseEstimator):
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
-        cache=True,
+        cache=False,
     ):
         self.label_type = label_type
         self.feature_type = feature_type
@@ -136,7 +136,9 @@ class FeatureExtractor(BaseEstimator):
         self.meta_data = {}
 
         if cache:
-            identifier = hashlib.md5(str(self.get_params()).encode("utf-8"))
+            identifier = hashlib.md5(
+                str(self.get_params()).encode("utf-8")
+            ).hexdigest()[0:8]
             self.cache_dir = os.path.join("./cache", identifier)
             os.makedirs(self.cache_dir, exist_ok=True)
 
