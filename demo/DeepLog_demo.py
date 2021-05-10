@@ -18,7 +18,7 @@ device = 0
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
-window_size = 15
+window_size = 10
 stride = 1
 
 topk = 10
