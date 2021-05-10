@@ -81,25 +81,27 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
 
-            store_df = pd.DataFrame(store_dict)
-            store_df["window_anomaly"] = store_df.apply(
-                lambda x: x["window_labels"] not in x["y_pred_topk"], axis=1
-            ).astype(int)
+            for topk in range(1, 16):
+                store_df = pd.DataFrame(store_dict)
+                store_df["window_anomaly"] = store_df.apply(
+                    lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
+                ).astype(int)
 
-            session_df = (
-                store_df[["session_idx", "session_labels", "window_anomaly"]]
-                .groupby("session_idx", as_index=False)
-                .sum()
-            )
-            y = (session_df["session_labels"] > 0).astype(int)
-            pred = (session_df["window_anomaly"] > 0).astype(int)
-            window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
-            eval_results = {
-                "f1": f1_score(y, pred),
-                "rc": recall_score(y, pred),
-                "pc": precision_score(y, pred),
-                "top{}-acc".format(self.topk): window_topk_acc,
-            }
+                session_df = (
+                    store_df[["session_idx", "session_labels", "window_anomaly"]]
+                    .groupby("session_idx", as_index=False)
+                    .sum()
+                )
+                y = (session_df["session_labels"] > 0).astype(int)
+                pred = (session_df["window_anomaly"] > 0).astype(int)
+                window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
+                eval_results = {
+                    "f1": f1_score(y, pred),
+                    "rc": recall_score(y, pred),
+                    "pc": precision_score(y, pred),
+                    "top{}-acc".format(topk): window_topk_acc,
+                }
+                print(eval_results)
             return eval_results
 
     def __input2device(self, batch_input):
