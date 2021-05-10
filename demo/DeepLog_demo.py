@@ -18,8 +18,8 @@ device = 0
 feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = True
 test_ratio = 0.2
-window_size = 32
-stride = 5
+window_size = 10
+stride = 3
 
 topk = 5
 batch_size = 512
@@ -28,7 +28,8 @@ learning_rate = 1.0e-3
 use_tfidf = False
 
 hidden_size = 32
-num_directions = 2
+num_directions = 1
+embedding_dim = 5
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
@@ -72,6 +73,9 @@ if __name__ == "__main__":
 
     model = LSTM(
         meta_data=ext.meta_data,
+        hidden_size=hidden_size,
+        num_directions=num_directions,
+        embedding_dim=embedding_dim,
         feature_type=feature_type,
         use_tfidf=use_tfidf,
         topk=topk,
