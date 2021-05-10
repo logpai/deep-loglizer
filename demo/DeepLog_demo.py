@@ -19,7 +19,7 @@ feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
 window_size = 10
-stride = 1
+stride = 5
 
 topk = 10
 batch_size = 512
@@ -27,17 +27,17 @@ epoches = 35
 learning_rate = 1.0e-3
 use_tfidf = False
 
-hidden_size = 32
+hidden_size = 16
 num_directions = 1
-embedding_dim = 5
+embedding_dim = 3
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
 pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
-log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
-# log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
+# log_file = "../data/HDFS/HDFS.log_structured.csv"  # The structured log file
+log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
 label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 if __name__ == "__main__":
@@ -88,9 +88,9 @@ if __name__ == "__main__":
     )
     model.fit(dataloader_train, epoches=epoches, learning_rate=learning_rate)
 
-    print("Evaluating train:")
-    eval_results = model.evaluate(dataloader_train, "train")
-    print(eval_results)
+    # print("Evaluating train:")
+    # eval_results = model.evaluate(dataloader_train, "train")
+    # print(eval_results)
 
     print("Evaluating test:")
     eval_results = model.evaluate(dataloader_test)

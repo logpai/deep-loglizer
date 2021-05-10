@@ -130,6 +130,7 @@ class FeatureExtractor:
         self.meta_data = {}
 
     def __generate_windows(self, session_dict, stride):
+        window_count = 0
         for session_id, data_dict in session_dict.items():
             if self.window_type == "sliding":
                 i = 0
@@ -156,12 +157,16 @@ class FeatureExtractor:
                         )
                         windows.append(window)
                         window_labels.append(self.log2id_train.get(templates[-1], 1))
-
+                window_count += len(windows)
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
+
             elif self.window_type == "session":
                 session_dict[session_id]["windows"] = data_dict["templates"]
                 session_dict[session_id]["window_labels"] = [data_dict["label"]]
+                window_count += 1
+
+            print("{} sliding windows generated.".format(window_count))
 
     def __windows2quantitative(self, windows):
         total_features = []
@@ -231,6 +236,7 @@ class FeatureExtractor:
             self.meta_data["vocab_size"] = len(self.log2id_train)
 
     def transform(self, session_dict, datatype="train"):
+        print("Transforming {} data.".format(datatype))
         if datatype == "test":
             # handle new logs
             ulog_test = set(
