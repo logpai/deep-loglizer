@@ -43,6 +43,19 @@ class AE(ForcastBasedModel):
             self.hidden_size * len(kernel_sizes), num_labels
         )
 
+    # 1.
+    # 32 x 1 (1,2,3,4,5,7,8)
+    # after embedding: 32 x 16
+    # lstm / avg  -> 1 x hidden [a]
+    # encoder: mlp
+    # internal
+    # decoder: mlp
+    # recst_vector [b]
+    # recst loss: a <-> b?
+
+    # 2.
+    # 32 x 1 (1,2,3,4,5,7,8) -> window_count  -> 1 x unique_event
+
     def forward(self, input_dict):
         y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]

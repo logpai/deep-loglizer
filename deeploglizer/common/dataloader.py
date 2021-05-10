@@ -73,9 +73,11 @@ def load_HDFS(
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
+    label_data["Label"] = label_data["Label"].map(lambda x: int(x == "Anomaly"))
     label_data_dict = dict(zip(label_data["BlockId"], label_data["Label"]))
-    for k, v in session_dict.items():
-        session_dict[k]["label"] = int(label_data_dict[k] == "Anomaly")
+
+    for k in session_dict.keys():
+        session_dict[k]["label"] = label_data_dict[k]
 
     # split data
     session_ids = list(session_dict.keys())
@@ -96,6 +98,11 @@ def load_HDFS(
     session_train = {k: session_dict[k] for k in session_id_train}
     session_test = {k: session_dict[k] for k in session_id_test}
 
-    print("# train sessions: {}".format(len(session_train)))
-    print("# test sessions: {}".format(len(session_test)))
+    train_anomaly_ratio = 100 * sum(session_labels_train) / len(session_labels_train)
+    test_anomaly_ratio = 100 * sum(session_labels_test) / len(session_labels_test)
+
+    print(
+        "# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly_ratio)
+    )
+    print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
     return session_train, session_test
