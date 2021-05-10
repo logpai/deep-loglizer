@@ -19,8 +19,8 @@ label_type = "next_log"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
-window_size = 50
-stride = 20
+window_size = 10
+stride = 1
 
 topk = 10
 batch_size = 1024
