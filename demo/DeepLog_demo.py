@@ -19,7 +19,7 @@ feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = True
 test_ratio = 0.2
 window_size = 10
-stride = 5
+stride = 1
 
 topk = 5
 batch_size = 512
