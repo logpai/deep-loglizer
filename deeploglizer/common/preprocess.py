@@ -5,8 +5,14 @@ import numpy as np
 from collections import Counter, defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.base import BaseEstimator
+from deeploglizer.common.utils import (
+    json_pretty_dump,
+    dump_pickle,
+    load_pickle,
+)
 import hashlib
 import pickle
+import json
 
 
 def load_vectors(fname):
@@ -120,7 +126,7 @@ class FeatureExtractor(BaseEstimator):
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
-        cache=False,
+        cache=True,
     ):
         self.label_type = label_type
         self.feature_type = feature_type
@@ -136,11 +142,13 @@ class FeatureExtractor(BaseEstimator):
         self.meta_data = {}
 
         if cache:
-            identifier = hashlib.md5(
-                str(self.get_params()).encode("utf-8")
-            ).hexdigest()[0:8]
+            param_json = self.get_params()
+            identifier = hashlib.md5(str(param_json).encode("utf-8")).hexdigest()[0:8]
             self.cache_dir = os.path.join("./cache", identifier)
             os.makedirs(self.cache_dir, exist_ok=True)
+            json_pretty_dump(
+                param_json, os.path.join(self.cache_dir, "feature_extractor.json")
+            )
 
     def __generate_windows(self, session_dict, stride):
         window_count = 0
@@ -210,7 +218,26 @@ class FeatureExtractor(BaseEstimator):
                 total_idx.append(self.vocab.logs2idx(window))
         return np.array(total_idx)
 
+    def save(self):
+        print("Saving feature extractor to {}.".format(self.cache_dir))
+        with open(os.path.join(self.cache_dir, "est.pkl"), "wb") as fw:
+            pickle.dump(self, fw)
+
+    def load(self):
+        try:
+            save_file = os.path.join(self.cache_dir, "est.pkl")
+            print("Loading feature extractor from {}.".format(save_file))
+            with open(save_file, "rb") as fw:
+                obj = pickle.load(fw)
+                self.__dict__ = obj.__dict__
+                return True
+        except Exception as e:
+            print("Cannot load cached feature extractor.")
+            return False
+
     def fit(self, session_dict):
+        if self.load():
+            return
         log_padding = "<pad>"
         log_oov = "<oov>"
 
@@ -248,6 +275,8 @@ class FeatureExtractor(BaseEstimator):
         elif self.feature_type == "sequentials":
             self.meta_data["vocab_size"] = len(self.log2id_train)
 
+        self.save()
+
     def transform(self, session_dict, datatype="train"):
         print("Transforming {} data.".format(datatype))
         if datatype == "test":
@@ -257,6 +286,10 @@ class FeatureExtractor(BaseEstimator):
             )
             ulog_new = ulog_test - self.ulog_train
             print(f"{len(ulog_new)} new templates show while testing.")
+
+        cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
+        if self.cache and os.path.isfile(cached_file):
+            return load_pickle(cached_file)
 
         # generate windows, each window contains logid only
         if datatype == "train":
@@ -279,6 +312,10 @@ class FeatureExtractor(BaseEstimator):
             feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
+
+        if self.cache:
+            dump_pickle(session_dict, cached_file)
+        return session_dict
 
     def fit_transform(self, session_dict):
         self.fit(session_dict)

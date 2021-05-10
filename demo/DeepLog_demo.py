@@ -65,8 +65,8 @@ if __name__ == "__main__":
         use_tfidf=use_tfidf,
     )
 
-    ext.fit_transform(session_train)
-    ext.transform(session_test, datatype="test")
+    session_train = ext.fit_transform(session_train)
+    session_test = ext.transform(session_test, datatype="test")
 
     dataset_train = log_dataset(session_train, feature_type=feature_type)
     dataloader_train = DataLoader(
