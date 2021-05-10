@@ -95,7 +95,9 @@ def load_HDFS(
         random_state=random_seed,
     )
 
-    session_train = {k: session_dict[k] for k in session_id_train}
+    session_train = {
+        k: session_dict[k] for k in session_id_train if session_dict[k]["Label"] == 0
+    }
     session_test = {k: session_dict[k] for k in session_id_test}
 
     train_anomaly_ratio = 100 * sum(session_labels_train) / len(session_labels_train)
