@@ -18,11 +18,11 @@ device = 0
 feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = True
 test_ratio = 0.2
-window_size = 10
-stride = 1
+window_size = 32
+stride = 5
 
 topk = 1
-batch_size = 32
+batch_size = 512
 epoches = 10
 learning_rate = 1.0e-3
 use_tfidf = False
