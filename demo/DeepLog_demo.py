@@ -23,7 +23,7 @@ window_size = 10
 stride = 10
 
 topk = 10
-batch_size = 512
+batch_size = 1024
 epoches = 10
 learning_rate = 1.0e-3
 use_tfidf = False
