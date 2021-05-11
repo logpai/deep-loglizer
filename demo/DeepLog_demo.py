@@ -26,7 +26,7 @@ stride = 1
 topk = 10
 batch_size = 1024
 epoches = 50
-learning_rate = 1.0e-3
+learning_rate = 1.0e-2
 use_tfidf = False
 
 hidden_size = 128
@@ -39,7 +39,7 @@ pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
 deduplicate_windows = False
-cache = False
+cache = True
 
 log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
 if not os.path.isfile(log_file):

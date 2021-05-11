@@ -183,6 +183,7 @@ class FeatureExtractor(BaseEstimator):
                         windows.append(window)
                         window_labels.append(self.log2id_train.get(templates[-1], 1))
                 if self.deduplicate_windows:
+                    print("Deduplicating windows...")
                     windows, uidx = np.unique(windows, axis=0, return_index=True)
                     window_labels = np.array(window_labels)[uidx]
                 window_count += len(windows)
