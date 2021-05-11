@@ -141,7 +141,12 @@ def load_HDFS(
             num = len(session_train[k]["templates"])
             tmp_dict["num"].append(num)
             tmp_dict["k"].append(k)
-        session_train = {k: v for k, v in session_train.items() if v["label"] == 0}
+
+        session_train = {
+            k: v
+            for k, v in session_train.items()
+            if v["label"] == 0 and len(v["templates"]) < 50
+        }
 
         pd.DataFrame(tmp_dict).to_csv("tmp.csv", index=False)
         for k in session_test.keys():
