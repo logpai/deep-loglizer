@@ -5,6 +5,7 @@ from collections import defaultdict
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
 from torch import nn
+from IPython import embed
 
 
 class Embedder(nn.Module):
@@ -40,6 +41,7 @@ class ForcastBasedModel(nn.Module):
         meta_data,
         feature_type,
         label_type,
+        eval_type,
         topk,
         use_tfidf,
         embedding_dim,
@@ -53,6 +55,7 @@ class ForcastBasedModel(nn.Module):
         self.meta_data = meta_data
         self.feature_type = feature_type
         self.label_type = label_type
+        self.eval_type = eval_type
 
         if feature_type in ["semantics", "sequentials"]:
             self.embedder = Embedder(
@@ -70,7 +73,6 @@ class ForcastBasedModel(nn.Module):
             return self.evaluate_anomaly(test_loader, dtype="test")
 
     def evaluate_anomaly(self, test_loader, dtype="test"):
-        from IPython import embed
 
         self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -89,8 +91,6 @@ class ForcastBasedModel(nn.Module):
                 store_dict["session_preds"].extend(tensor2flatten_arr(y_pred))
 
             store_df = pd.DataFrame(store_dict)
-            embed()
-
             store_df["window_anomaly"] = store_df.apply(
                 lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
             ).astype(int)
@@ -150,11 +150,14 @@ class ForcastBasedModel(nn.Module):
                 ).astype(int)
 
                 # store_df.to_csv(f"store_df_{dtype}.csv", index=False)
-                session_df = (
-                    store_df[["session_idx", "session_labels", "window_anomaly"]]
-                    .groupby("session_idx", as_index=False)
-                    .sum()
-                )
+                if self.eval_type == "session":
+                    session_df = (
+                        store_df[["session_idx", "session_labels", "window_anomaly"]]
+                        .groupby("session_idx", as_index=False)
+                        .sum()
+                    )
+                else:
+                    session_df = store_df
                 # session_df.to_csv(f"session_df_{dtype}.csv", index=False)
 
                 y = (session_df["session_labels"] > 0).astype(int)
@@ -174,7 +177,7 @@ class ForcastBasedModel(nn.Module):
             print("Finish counting. [{:.2f}s]".format(count_end - count_start))
 
             print(best_result)
-            return eval_results
+            return best_result
 
     def __input2device(self, batch_input):
         return {k: v.to(self.device) for k, v in batch_input.items()}
@@ -186,6 +189,8 @@ class ForcastBasedModel(nn.Module):
                 len(train_loader), self.device
             )
         )
+        best_f1 = -float("inf")
+        best_results = None
         for epoch in range(1, epoches + 1):
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -203,6 +208,10 @@ class ForcastBasedModel(nn.Module):
             print(
                 "Epoch {}/{}, training loss: {:.5f}".format(epoch, epoches, epoch_loss)
             )
-            if test_loader is not None and (epoch % 5 == 0):
+            if test_loader is not None and (epoch % 1 == 0):
                 print("Evaluating test.")
-                self.evaluate(test_loader)
+                eval_results = self.evaluate(test_loader)
+                if eval_results["f1"] > best_f1:
+                    best_f1 = eval_results["f1"]
+                    best_results = eval_results
+        return best_results

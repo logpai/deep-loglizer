@@ -4,6 +4,7 @@ import os
 import sys
 
 sys.path.append("../")
+import argparse
 from deeploglizer.models import LSTM
 from deeploglizer.common.dataloader import (
     load_HDFS,
@@ -17,17 +18,30 @@ from torch.utils.data import DataLoader
 
 from IPython import embed
 
-random_seed = 42
-device = 0
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--test_ratio", default=0.2, type=float, help="test_ratio")
+parser.add_argument(
+    "--train_anomaly_ratio", default=0, type=float, help="train_anomaly_ratio"
+)
+parser.add_argument("--gpu", default=0, type=int, help="gpu id")
+args = vars(parser.parse_args())
+
+
+test_ratio = args["test_ratio"]
+train_anomaly_ratio = args["train_anomaly_ratio"]
+device = args["gpu"]
+
+random_seed = 42
 label_type = "next_log"
+eval_type = "session"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 window_size = 10
 stride = 1
 
 topk = 10
 batch_size = 1024
-epoches = 50
+epoches = 2
 learning_rate = 1.0e-2
 use_tfidf = False
 
@@ -54,7 +68,8 @@ if __name__ == "__main__":
     session_train, session_test = load_HDFS(
         log_file=log_file,
         label_file=label_file,
-        test_ratio=0.8,
+        test_ratio=test_ratio,
+        train_anomaly_ratio=train_anomaly_ratio,
         sequential_partition=False,
         random_seed=42,
     )
@@ -99,17 +114,16 @@ if __name__ == "__main__":
         topk=topk,
         device=device,
     )
-    model.fit(
+    eval_results = model.fit(
         dataloader_train,
         test_loader=dataloader_test,
         epoches=epoches,
         learning_rate=learning_rate,
     )
 
-    # print("Evaluating train:")
-    # eval_results = model.evaluate(dataloader_train, "train")
-    # print(eval_results)
-
-    # print("Evaluating test:")
-    # eval_results = model.evaluate(dataloader_test)
-    # print(eval_results)
+    result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
+    args_str = "\t".join(["{}:{}".format(k, v) for k, v in args.items()])
+    os.makedirs("./demo_results/", exist_ok=True)
+    with open(os.path.join("./demo_results/", f"HDFS_deeplog.txt"), "a+") as fw:
+        info = "{} {}\n".format(args_str, result_str)
+        fw.write(info)

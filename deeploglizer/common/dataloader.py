@@ -16,6 +16,8 @@ from sklearn.utils import shuffle
 from collections import OrderedDict, defaultdict
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
+from IPython import embed
+from deeploglizer.common.utils import decision
 
 
 class log_dataset(Dataset):
@@ -43,25 +45,38 @@ class log_dataset(Dataset):
         return self.flatten_data_list[idx]
 
 
-def load_BGL(log_file, label_file, sequential_partition=False, random_seed=42):
+def load_BGL(log_file, test_ratio=0.8, sequential_partition=False, random_seed=42):
     print("Loading logs from {}.".format(log_file))
-    struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
+    struct_log = pd.read_csv(
+        log_file, engine="c", na_filter=False, memory_map=True, nrows=10000
+    )
     struct_log.sort_values(by=["Timestamp"], inplace=True)
 
-    labels = struct_log["Label"].map(lambda x: x != "-").astype(int)
-    train_test_split(
-        session_ids,
-        session_labels,
+    templates = struct_log["EventTemplate"].values
+    labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
+
+    idx_train, idx_test, labels_train, labels_test = train_test_split(
+        list(range(templates.shape[0])),
+        labels,
         test_size=test_ratio,
         shuffle=(sequential_partition == False),
         random_state=random_seed,
     )
+
+    session_train = {
+        "all": {"templates": templates[idx_train].tolist(), "label": labels[idx_train]}
+    }
+    session_test = {
+        "all": {"templates": templates[idx_test].tolist(), "label": labels[idx_test]}
+    }
+    return session_train, session_test
 
 
 def load_HDFS(
     log_file,
     label_file,
     test_ratio=None,
+    train_anomaly_ratio=1,
     first_n_rows=None,
     sequential_partition=False,
     random_seed=42,
@@ -119,8 +134,10 @@ def load_HDFS(
         session_train = {
             k: session_dict[k]
             for k in session_id_train
-            if session_dict[k]["label"] == 0
+            if (session_dict[k]["label"] == 0)
+            or (session_dict[k]["label"] == 1 and decision(train_anomaly_ratio))
         }
+
         session_test = {k: session_dict[k] for k in session_id_test}
     else:
         print("Using first {} rows to build training data.".format(first_n_rows))
@@ -148,33 +165,37 @@ def load_HDFS(
                     )
             # if blk_count >= 30000:
             #     break
-        session_labels_train = []
-        session_labels_test = []
 
         tmp_dict = defaultdict(list)
         for k in session_train.keys():
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
 
+        # tmp_train = {}
+        # for k, v in session_train.items():
+        #     # if v["label"] == 0:
+        #     # tmp_train[k] = v
+        #     print(decision(train_anomaly_ratio))
+        #     if decision(train_anomaly_ratio):
+        #         tmp_train[k] = v
+        # session_train = tmp_train
         session_train = {
             k: v
             for k, v in session_train.items()
-            if v["label"] == 0 and 13 <= len(v["templates"]) <= 42
+            if (v["label"] == 0) or (v["label"] == 1 and decision(train_anomaly_ratio))
         }
 
         for k in session_test.keys():
             session_test[k]["label"] = label_data_dict[k]
-            session_labels_test.append(label_data_dict[k])
 
-    print(len(set(session_train) | set(session_test)))
+    session_labels_train = [v["label"] for k, v in session_train.items()]
+    session_labels_test = [v["label"] for k, v in session_test.items()]
 
-    train_anomaly_ratio = 100 * sum(session_labels_train) / len(session_labels_train)
-    test_anomaly_ratio = 100 * sum(session_labels_test) / len(session_labels_test)
+    train_anomaly = 100 * sum(session_labels_train) / len(session_labels_train)
+    test_anomaly = 100 * sum(session_labels_test) / len(session_labels_test)
 
-    print(
-        "# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly_ratio)
-    )
-    print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
+    print("# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly))
+    print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly))
 
     return session_train, session_test
 

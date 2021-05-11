@@ -172,7 +172,13 @@ class FeatureExtractor(BaseEstimator):
                             self.log2id_train.get(templates[i + self.window_size], 1)
                         )
                     elif self.label_type == "anomaly":
-                        window_labels.append(data_dict["label"])
+                        if session_id == "all":
+                            label = int(
+                                1 in data_dict["label"][i : i + self.window_size]
+                            )
+                            window_labels.append(label)
+                        else:
+                            window_labels.append(data_dict["label"])
                     elif self.label_type == "none":
                         window_labels.append(None)
                     i += stride
@@ -184,6 +190,14 @@ class FeatureExtractor(BaseEstimator):
                         )
                         windows.append(window)
                         window_labels.append(self.log2id_train.get(templates[-1], 1))
+                    elif self.label_type == "anomaly":
+                        if session_id == "all":
+                            label = int(
+                                1 in data_dict["label"][i : i + self.window_size]
+                            )
+                            window_labels.append(label)
+                        else:
+                            window_labels.append(data_dict["label"])
                 if self.deduplicate_windows:
                     print("Deduplicating windows...")
                     windows, uidx = np.unique(windows, axis=0, return_index=True)

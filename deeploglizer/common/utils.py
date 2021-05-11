@@ -5,7 +5,10 @@ import numpy as np
 import h5py
 import json
 import pickle
+import random
 
+def decision(probability):
+    return random.random() < probability
 
 def json_pretty_dump(obj, filename):
     with open(filename, "w") as fw:
