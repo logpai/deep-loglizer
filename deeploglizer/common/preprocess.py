@@ -294,6 +294,7 @@ class FeatureExtractor(BaseEstimator):
             self.meta_data["num_labels"] = 2
 
         if self.feature_type == "semantics":
+            print("Using semantics.")
             print("Building vocab.")
             self.vocab.build_vocab(self.ulog_train)
             print("Building vocab done.")
