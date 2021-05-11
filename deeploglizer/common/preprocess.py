@@ -14,6 +14,8 @@ import hashlib
 import pickle
 import json
 
+from IPython import embed
+
 
 def load_vectors(fname):
     if fname.endswith("pkl"):
@@ -126,7 +128,7 @@ class FeatureExtractor(BaseEstimator):
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
-        cache=True,
+        cache=False,
     ):
         self.label_type = label_type
         self.feature_type = feature_type
@@ -178,7 +180,11 @@ class FeatureExtractor(BaseEstimator):
                         )
                         windows.append(window)
                         window_labels.append(self.log2id_train.get(templates[-1], 1))
+
+                windows, uidx = np.unique(windows, axis=0, return_index=True)
+                window_labels = np.array(window_labels)[uidx]
                 window_count += len(windows)
+
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
 
@@ -275,7 +281,8 @@ class FeatureExtractor(BaseEstimator):
         elif self.feature_type == "sequentials":
             self.meta_data["vocab_size"] = len(self.log2id_train)
 
-        self.save()
+        if self.cache:
+            self.save()
 
     def transform(self, session_dict, datatype="train"):
         print("Transforming {} data.".format(datatype))
@@ -287,9 +294,10 @@ class FeatureExtractor(BaseEstimator):
             ulog_new = ulog_test - self.ulog_train
             print(f"{len(ulog_new)} new templates show while testing.")
 
-        cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
-        if self.cache and os.path.isfile(cached_file):
-            return load_pickle(cached_file)
+        if self.cache:
+            cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
+            if os.path.isfile(cached_file):
+                return load_pickle(cached_file)
 
         # generate windows, each window contains logid only
         if datatype == "train":
