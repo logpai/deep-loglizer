@@ -78,6 +78,7 @@ class ForcastBasedModel(nn.Module):
         with torch.no_grad():
             y_pred = []
             store_dict = defaultdict(list)
+            infer_start = time.time()
             for batch_input in test_loader:
                 return_dict = self.forward(self.__input2device(batch_input))
                 y_prob, y_pred = return_dict["y_pred"].max(dim=1)
@@ -89,9 +90,10 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["window_probs"].extend(tensor2flatten_arr(y_prob))
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
+            infer_end = time.time()
+            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
 
             store_df = pd.DataFrame(store_dict)
-
             if self.eval_type == "session":
                 use_cols = ["session_idx", "window_anomalies", "window_preds"]
                 session_df = (
@@ -99,7 +101,6 @@ class ForcastBasedModel(nn.Module):
                 )
             else:
                 session_df = store_df
-
             pred = (session_df[f"window_preds"] > 0).astype(int)
             y = (session_df["window_anomalies"] > 0).astype(int)
 

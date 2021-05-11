@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader
 
 from IPython import embed
 
+# python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test_ratio", default=0.2, type=float, help="test_ratio")
@@ -26,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     "--feature_type", default="sequentials", type=str, help="feature_type"
 )  # "sequentials", "semantics", "quantitatives"
-parser.add_argument("--dataset", default="HDFS", type=str, help="dataset")
+parser.add_argument("--dataset", default="BGL", type=str, help="dataset")
 parser.add_argument("--label_type", default="anomaly", type=str, help="label_type")
 parser.add_argument("--gpu", default=0, type=int, help="gpu id")
 args = vars(parser.parse_args())
@@ -50,7 +51,7 @@ batch_size = 1024
 epoches = 5
 learning_rate = 1.0e-2
 use_tfidf = False
-sequential_partition = False
+sequential_partition = True
 
 hidden_size = 200
 num_directions = 1
