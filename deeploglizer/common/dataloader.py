@@ -53,7 +53,7 @@ def load_BGL(
     sequential_partition=False,
     random_seed=42,
 ):
-    print("Loading logs from {}.".format(log_file))
+    print("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Timestamp"], inplace=True)
 
@@ -114,7 +114,7 @@ def load_HDFS(
     -------
         TODO
     """
-    print("Loading logs from {}.".format(log_file))
+    print("Loading HDFS logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Date", "Time"], inplace=True)
 

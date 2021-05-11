@@ -8,9 +8,8 @@ import argparse
 from deeploglizer.models import LSTM
 from deeploglizer.common.dataloader import (
     load_HDFS,
+    load_BGL,
     log_dataset,
-    load_HDFS_id,
-    load_HDFS_semantic,
 )
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, set_device
@@ -27,6 +26,7 @@ parser.add_argument(
 parser.add_argument(
     "--feature_type", default="sequentials", type=str, help="feature_type"
 )
+parser.add_argument("--dataset", default="BGL", type=str, help="dataset")
 parser.add_argument("--gpu", default=0, type=int, help="gpu id")
 args = vars(parser.parse_args())
 
@@ -35,11 +35,12 @@ test_ratio = args["test_ratio"]
 train_anomaly_ratio = args["train_anomaly_ratio"]
 device = args["gpu"]
 feature_type = args["feature_type"]  # "sequentials", "semantics", "quantitatives"
+dataset = args["dataset"]
 
 
 random_seed = 42
 label_type = "next_log"
-eval_type = "session"
+eval_type = "window" if dataset == "BGL" else "session"
 window_size = 10
 stride = 1
 
@@ -62,22 +63,36 @@ pretrain_path = None
 deduplicate_windows = False
 cache = False
 
-log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
-if not os.path.isfile(log_file):
-    log_file = "../data/HDFS/HDFS_100k.log_structured.csv"  # The structured log file
-label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
+if dataset == "HDFS":
+    log_file = "../data/HDFS/HDFS.log_groundtruth.csv"
+    if not os.path.isfile(log_file):
+        log_file = "../data/HDFS/HDFS_100k.log_structured.csv"
+    label_file = "../data/HDFS/anomaly_label.csv"
+elif dataset == "BGL":
+    log_file = "../data/BGL/BGL.log_groundtruth.csv"
+    if not os.path.isfile(log_file):
+        log_file = "../data/BGL/BGL_100k.log_structured.csv"
 
 if __name__ == "__main__":
     seed_everything(random_seed)
 
-    session_train, session_test = load_HDFS(
-        log_file=log_file,
-        label_file=label_file,
-        test_ratio=test_ratio,
-        train_anomaly_ratio=train_anomaly_ratio,
-        sequential_partition=sequential_partition,
-        random_seed=42,
-    )
+    if dataset == "HDFS":
+        session_train, session_test = load_HDFS(
+            log_file=log_file,
+            label_file=label_file,
+            test_ratio=test_ratio,
+            train_anomaly_ratio=train_anomaly_ratio,
+            sequential_partition=sequential_partition,
+            random_seed=random_seed,
+        )
+    elif dataset == "BGL":
+        session_train, session_test = load_BGL(
+            log_file=log_file,
+            test_ratio=test_ratio,
+            train_anomaly_ratio=train_anomaly_ratio,
+            sequential_partition=True,
+            random_seed=random_seed,
+        )
 
     ext = FeatureExtractor(
         label_type=label_type,  # "none", "next_log", "anomaly"
@@ -113,10 +128,12 @@ if __name__ == "__main__":
         embedding_dim=embedding_dim,
         feature_type=feature_type,
         label_type=label_type,
+        eval_type=eval_type,
         use_tfidf=use_tfidf,
         topk=topk,
         device=device,
     )
+
     eval_results = model.fit(
         dataloader_train,
         test_loader=dataloader_test,
