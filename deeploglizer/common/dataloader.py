@@ -43,12 +43,26 @@ class log_dataset(Dataset):
         return self.flatten_data_list[idx]
 
 
+def load_BGL(log_file, label_file, sequential_partition=False, random_seed=42):
+    print("Loading logs from {}.".format(log_file))
+    struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
+    struct_log.sort_values(by=["Timestamp"], inplace=True)
+
+    train_test_split(
+        session_ids,
+        session_labels,
+        test_size=test_ratio,
+        shuffle=(sequential_partition == False),
+        random_state=random_seed,
+    )
+
+
 def load_HDFS(
     log_file,
     label_file,
     test_ratio=None,
     first_n_rows=100000,
-    sequential_partition=True,
+    sequential_partition=False,
     random_seed=42,
 ):
     """Load HDFS structured log into train and test data
