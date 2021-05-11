@@ -145,6 +145,8 @@ def load_HDFS(
             session_test[k]["label"] = label_data_dict[k]
             session_labels_test.append(label_data_dict[k])
 
+    print(len(set(session_train) | set(session_test)))
+
     train_anomaly_ratio = 100 * sum(session_labels_train) / len(session_labels_train)
     test_anomaly_ratio = 100 * sum(session_labels_test) / len(session_labels_test)
 
