@@ -340,26 +340,20 @@ class FeatureExtractor(BaseEstimator):
             windows = data_dict["windows"]
 
             # generate sequential feautres # sliding windows on logid list
-            feature_dict["sequentials"] = self.__windows2sequential(windows)
+            if self.feature_type == "sequentials":
+                feature_dict["sequentials"] = self.__windows2sequential(windows)
 
             # generate semantics feautres # use logid -> token id list
-            feature_dict["semantics"] = self.__window2semantics(windows)
+            if self.feature_type == "semantics":
+                feature_dict["semantics"] = self.__window2semantics(windows)
 
             # generate quantitative feautres # count logid in each window
-            feature_dict["quantitatives"] = self.__windows2quantitative(windows)
+            if self.feature_type == "quantitatives":
+                feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
 
-        # with open("sessions_windows.txt", "w") as fw1, open(
-        #     "sessions_templates.txt", "w"
-        # ) as fw2:
-        #     for k, v in session_dict.items():
-        #         for line in v["features"]["sequentials"]:
-        #             fw1.write(str(line) + "\n")
-        #         for line in v["templates"]:
-        #             fw2.write(str(line) + "\n")
-        #         fw2.write("\n---{}---\n".format(v["label"]))
-
+        print("Finish feature extraction.")
         if self.cache:
             dump_pickle(session_dict, cached_file)
         return session_dict

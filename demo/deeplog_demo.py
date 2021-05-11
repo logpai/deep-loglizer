@@ -25,7 +25,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--feature_type", default="sequentials", type=str, help="feature_type"
-)
+)  # "sequentials", "semantics", "quantitatives"
 parser.add_argument("--dataset", default="BGL", type=str, help="dataset")
 parser.add_argument("--gpu", default=0, type=int, help="gpu id")
 args = vars(parser.parse_args())
@@ -34,7 +34,7 @@ args = vars(parser.parse_args())
 test_ratio = args["test_ratio"]
 train_anomaly_ratio = args["train_anomaly_ratio"]
 device = args["gpu"]
-feature_type = args["feature_type"]  # "sequentials", "semantics", "quantitatives"
+feature_type = args["feature_type"]
 dataset = args["dataset"]
 
 
