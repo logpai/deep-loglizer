@@ -61,7 +61,7 @@ def load_HDFS(
     log_file,
     label_file,
     test_ratio=None,
-    first_n_rows=100000,
+    first_n_rows=None,
     sequential_partition=False,
     random_seed=42,
 ):
