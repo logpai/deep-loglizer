@@ -24,6 +24,9 @@ parser.add_argument("--test_ratio", default=0.2, type=float, help="test_ratio")
 parser.add_argument(
     "--train_anomaly_ratio", default=0, type=float, help="train_anomaly_ratio"
 )
+parser.add_argument(
+    "--feature_type", default="sequentials", type=str, help="feature_type"
+)
 parser.add_argument("--gpu", default=0, type=int, help="gpu id")
 args = vars(parser.parse_args())
 
@@ -31,11 +34,12 @@ args = vars(parser.parse_args())
 test_ratio = args["test_ratio"]
 train_anomaly_ratio = args["train_anomaly_ratio"]
 device = args["gpu"]
+feature_type = args["feature_type"]  # "sequentials", "semantics", "quantitatives"
+
 
 random_seed = 42
 label_type = "next_log"
 eval_type = "session"
-feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 window_size = 10
 stride = 1
 
@@ -44,6 +48,7 @@ batch_size = 1024
 epoches = 5
 learning_rate = 1.0e-2
 use_tfidf = False
+sequential_partition = False
 
 hidden_size = 200
 num_directions = 1
@@ -70,11 +75,9 @@ if __name__ == "__main__":
         label_file=label_file,
         test_ratio=test_ratio,
         train_anomaly_ratio=train_anomaly_ratio,
-        sequential_partition=False,
+        sequential_partition=sequential_partition,
         random_seed=42,
     )
-
-    # session_train, session_test = load_HDFS_semantic("../data/HDFS_semantic")
 
     ext = FeatureExtractor(
         label_type=label_type,  # "none", "next_log", "anomaly"

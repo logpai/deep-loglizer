@@ -13,6 +13,7 @@ from deeploglizer.common.utils import (
 import hashlib
 import pickle
 import json
+import re
 
 from IPython import embed
 
@@ -45,7 +46,16 @@ class Vocab:
         self.token_vocab_size = None
 
     def __tokenize_log(self, log):
-        return log.split()
+        word_lst_tmp = re.findall(r"[a-zA-Z]+", log)
+        word_lst = []
+        for word in word_lst_tmp:
+            res = list(filter(None, re.split("([A-Z][a-z][^A-Z]*)", word)))
+            if len(res) == 0:
+                word_lst.append(word)
+            else:
+                res = [w.lower() for w in res]
+                word_lst.extend(res)
+        return word_lst
 
     def gen_pretrain_matrix(self, pretrain_path):
         print("Generating a pretrain matrix.")
