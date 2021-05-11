@@ -39,15 +39,15 @@ feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 window_size = 10
 stride = 1
 
-topk = 10
+topk = 8
 batch_size = 1024
-epoches = 2
+epoches = 5
 learning_rate = 1.0e-2
 use_tfidf = False
 
 hidden_size = 200
 num_directions = 1
-embedding_dim = 16
+embedding_dim = 8
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
