@@ -161,6 +161,8 @@ class FeatureExtractor(BaseEstimator):
                 i = 0
                 templates = data_dict["templates"]
                 template_len = len(templates)
+                if template_len == 1:
+                    continue
                 windows = []
                 window_labels = []
                 while i + self.window_size < template_len:
@@ -323,6 +325,16 @@ class FeatureExtractor(BaseEstimator):
             feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
+
+        # with open("sessions_windows.txt", "w") as fw1, open(
+        #     "sessions_templates.txt", "w"
+        # ) as fw2:
+        #     for k, v in session_dict.items():
+        #         for line in v["features"]["sequentials"]:
+        #             fw1.write(str(line) + "\n")
+        #         for line in v["templates"]:
+        #             fw2.write(str(line) + "\n")
+        #         fw2.write("\n---{}---\n".format(v["label"]))
 
         if self.cache:
             dump_pickle(session_dict, cached_file)
