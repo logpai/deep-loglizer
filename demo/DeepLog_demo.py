@@ -21,7 +21,7 @@ random_seed = 42
 device = 0
 
 label_type = "next_log"
-feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
+feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = None
 first_n_rows = 100000
@@ -36,7 +36,7 @@ use_tfidf = False
 
 hidden_size = 200
 num_directions = 1
-embedding_dim = 1
+embedding_dim = 16
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]

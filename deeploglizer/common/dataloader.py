@@ -161,9 +161,6 @@ def load_HDFS(
     )
     print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
 
-    import sys
-
-    sys.exit()
     return session_train, session_test
 
 
