@@ -182,7 +182,7 @@ class ForcastBasedModel(nn.Module):
                 len(train_loader), self.device
             )
         )
-        for epoch in range(epoches):
+        for epoch in range(1, epoches + 1):
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -197,9 +197,10 @@ class ForcastBasedModel(nn.Module):
                 batch_cnt += 1
             epoch_loss = epoch_loss / batch_cnt
             print(
-                "Epoch {}/{}, training loss: {:.5f}".format(
-                    epoch + 1, epoches, epoch_loss
-                )
+                "Epoch {}/{}, training loss: {:.5f}".format(epoch, epoches, epoch_loss)
             )
             if test_loader is not None and (epoch % 5 == 0):
+                print("Evaluating train.")
+                self.evaluate(train_loader)
+                print("Evaluating test.")
                 self.evaluate(test_loader)
