@@ -180,11 +180,10 @@ class FeatureExtractor(BaseEstimator):
                         )
                         windows.append(window)
                         window_labels.append(self.log2id_train.get(templates[-1], 1))
-
-                print("Before deduplicating {}".format(len(windows)))
-                windows, uidx = np.unique(windows, axis=0, return_index=True)
-                print("After deduplicating {}".format(len(uidx)))
-                window_labels = np.array(window_labels)[uidx]
+                # if session_id == "blk_-3544583377289625738":
+                #     embed()
+                # windows, uidx = np.unique(windows, axis=0, return_index=True)
+                # window_labels = np.array(window_labels)[uidx]
                 window_count += len(windows)
 
                 session_dict[session_id]["windows"] = windows
