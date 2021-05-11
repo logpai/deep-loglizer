@@ -35,6 +35,7 @@ class LSTM(ForcastBasedModel):
         self.hidden_size = hidden_size
         self.num_directions = num_directions
         self.use_tfidf = use_tfidf
+        self.embedding_dim = embedding_dim
         self.rnn = nn.LSTM(
             input_size=embedding_dim,
             hidden_size=self.hidden_size,
@@ -50,7 +51,10 @@ class LSTM(ForcastBasedModel):
         y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
         x = input_dict["features"]
-        x = self.embedder(x)
+        if self.embedding_dim == 1:
+            x = x.unsequeeze(-1)
+        else:
+            x = self.embedder(x)
 
         if self.feature_type == "semantics":
             if not self.use_tfidf:

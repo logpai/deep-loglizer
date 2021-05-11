@@ -140,7 +140,6 @@ class ForcastBasedModel(nn.Module):
             infer_end = time.time()
             print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             store_df = pd.DataFrame(store_dict)
-            store_df.to_csv(f"store_df_{dtype}.csv", index=False)
             best_result = None
             best_f1 = -float("inf")
 
@@ -150,11 +149,14 @@ class ForcastBasedModel(nn.Module):
                     lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
                 ).astype(int)
 
+                store_df.to_csv(f"store_df_{dtype}.csv", index=False)
                 session_df = (
                     store_df[["session_idx", "session_labels", "window_anomaly"]]
                     .groupby("session_idx", as_index=False)
                     .sum()
                 )
+                session_df.to_csv(f"session_df_{dtype}.csv", index=False)
+
                 y = (session_df["session_labels"] > 0).astype(int)
                 pred = (session_df["window_anomaly"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)

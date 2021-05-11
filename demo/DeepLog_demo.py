@@ -19,7 +19,7 @@ label_type = "next_log"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = None
-first_n_rows = 8000000
+first_n_rows = 100000
 window_size = 10
 stride = 1
 
@@ -29,9 +29,9 @@ epoches = 50
 learning_rate = 1.0e-2
 use_tfidf = False
 
-hidden_size = 128
-num_directions = 2
-embedding_dim = 8
+hidden_size = 200
+num_directions = 1
+embedding_dim = 1
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]

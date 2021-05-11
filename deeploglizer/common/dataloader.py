@@ -128,8 +128,8 @@ def load_HDFS(
                     session_test[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
-            # if blk_count >= 50000:
-            #     break
+            if blk_count >= 30000:
+                break
         session_labels_train = []
         session_labels_test = []
 
