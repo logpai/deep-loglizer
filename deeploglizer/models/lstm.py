@@ -12,6 +12,7 @@ class LSTM(ForcastBasedModel):
         num_directions=2,
         embedding_dim=16,
         feature_type="sequentials",
+        label_type="next_log",
         topk=5,
         use_tfidf=False,
         pretrain_matrix=None,
@@ -21,6 +22,7 @@ class LSTM(ForcastBasedModel):
         super().__init__(
             meta_data=meta_data,
             feature_type=feature_type,
+            label_type=label_type,
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,

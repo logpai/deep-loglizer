@@ -38,6 +38,7 @@ class ForcastBasedModel(nn.Module):
         self,
         meta_data,
         feature_type,
+        label_type,
         topk,
         use_tfidf,
         embedding_dim,
@@ -50,6 +51,7 @@ class ForcastBasedModel(nn.Module):
         self.topk = topk
         self.meta_data = meta_data
         self.feature_type = feature_type
+        self.label_type = label_type
 
         if feature_type in ["semantics", "sequentials"]:
             self.embedder = Embedder(
@@ -61,6 +63,57 @@ class ForcastBasedModel(nn.Module):
             )
 
     def evaluate(self, test_loader, dtype="test"):
+        if self.label_type == "next_log":
+            return self.evaluate_next_log(test_loader, dtype="test")
+        elif self.label_type == "anomaly":
+            return self.evaluate_anomaly(test_loader, dtype="test")
+
+    def evaluate_anomaly(self, test_loader, dtype="test"):
+        from IPython import embed
+
+        self.eval()  # set to evaluation mode
+        with torch.no_grad():
+            y_pred = []
+            store_dict = defaultdict(list)
+            for batch_input in test_loader:
+                return_dict = self.forward(self.__input2device(batch_input))
+                y_prob, y_pred = return_dict["y_pred"].max(dim=1)
+                store_dict["session_idx"].extend(
+                    tensor2flatten_arr(batch_input["session_idx"])
+                )
+                store_dict["session_labels"].extend(
+                    tensor2flatten_arr(batch_input["session_labels"])
+                )
+                store_dict["session_probs"].extend(tensor2flatten_arr(y_prob))
+                store_dict["session_preds"].extend(tensor2flatten_arr(y_pred))
+
+            store_df = pd.DataFrame(store_dict)
+            embed()
+
+            store_df["window_anomaly"] = store_df.apply(
+                lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
+            ).astype(int)
+
+            # session_df = (
+            #     store_df[["session_idx", "session_labels", "window_anomaly"]]
+            #     .groupby("session_idx", as_index=False)
+            #     .sum()
+            # )
+            # session_df.to_csv(f"sess_df_{topk}.csv", index=False)
+            # y = (session_df["session_labels"] > 0).astype(int)
+            # pred = (session_df["window_anomaly"] > 0).astype(int)
+            # window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
+            # eval_results = {
+            #     "f1": f1_score(y, pred),
+            #     "rc": recall_score(y, pred),
+            #     "pc": precision_score(y, pred),
+            #     "top{}-acc".format(topk): window_topk_acc,
+            # }
+
+            # print(best_result)
+            return eval_results
+
+    def evaluate_next_log(self, test_loader, dtype="test"):
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []

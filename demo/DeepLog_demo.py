@@ -15,7 +15,7 @@ from IPython import embed
 random_seed = 42
 device = 0
 
-label_type = "next_log"
+label_type = "anomaly"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
@@ -84,6 +84,7 @@ if __name__ == "__main__":
         num_directions=num_directions,
         embedding_dim=embedding_dim,
         feature_type=feature_type,
+        label_type=label_type,
         use_tfidf=use_tfidf,
         topk=topk,
         device=device,
