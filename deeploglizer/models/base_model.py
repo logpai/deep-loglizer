@@ -201,5 +201,5 @@ class ForcastBasedModel(nn.Module):
                     epoch + 1, epoches, epoch_loss
                 )
             )
-            if test_loader is not None:
+            if test_loader is not None and (epoch % 5 == 0):
                 self.evaluate(test_loader)
