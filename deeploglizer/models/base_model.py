@@ -1,3 +1,4 @@
+import time
 import torch
 import pandas as pd
 from collections import defaultdict
@@ -118,6 +119,7 @@ class ForcastBasedModel(nn.Module):
         with torch.no_grad():
             y_pred = []
             store_dict = defaultdict(list)
+            infer_start = time.time()
             for batch_input in test_loader:
                 return_dict = self.forward(self.__input2device(batch_input))
                 y_pred = return_dict["y_pred"]
@@ -134,7 +136,8 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["x"].extend(batch_input["features"].data.cpu().numpy())
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
-
+            infer_end = time.time()
+            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             store_df = pd.DataFrame(store_dict)
             store_df.to_csv(f"store_df_{dtype}.csv", index=False)
             best_result = None
