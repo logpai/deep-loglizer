@@ -31,7 +31,7 @@ use_tfidf = False
 
 hidden_size = 128
 num_directions = 2
-embedding_dim = 1
+embedding_dim = 8
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
