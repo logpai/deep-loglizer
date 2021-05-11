@@ -51,7 +51,15 @@ label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 if __name__ == "__main__":
     seed_everything(random_seed)
 
-    session_train, session_test = load_HDFS_semantic("../data/HDFS_semantic")
+    session_train, session_test = load_HDFS(
+        log_file=log_file,
+        label_file=label_file,
+        test_ratio=0.2,
+        sequential_partition=False,
+        random_seed=42,
+    )
+
+    # session_train, session_test = load_HDFS_semantic("../data/HDFS_semantic")
 
     ext = FeatureExtractor(
         label_type=label_type,  # "none", "next_log", "anomaly"
