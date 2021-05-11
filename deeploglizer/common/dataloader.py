@@ -167,11 +167,13 @@ def load_HDFS_id(log_id_path):
 
     session_test = {}
     for idx, line in enumerate(open(test_normal)):
+        if idx > 10000:
+            break
         sample = {"templates": line.split(), "label": 0}
         session_test[idx] = sample
 
     for idx, line in enumerate(open(test_anomaly)):
-        if idx > 50000:
+        if idx > 10000:
             break
         sample = {"templates": line.split(), "label": 1}
         session_test[idx] = sample
