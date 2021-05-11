@@ -144,6 +144,6 @@ if __name__ == "__main__":
     result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
     args_str = "\t".join(["{}:{}".format(k, v) for k, v in args.items()])
     os.makedirs("./demo_results/", exist_ok=True)
-    with open(os.path.join("./demo_results/", f"HDFS_deeplog.txt"), "a+") as fw:
+    with open(os.path.join("./demo_results/", f"{dataset}_deeplog.txt"), "a+") as fw:
         info = "{} {}\n".format(args_str, result_str)
         fw.write(info)
