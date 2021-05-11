@@ -18,7 +18,8 @@ device = 0
 label_type = "next_log"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
-test_ratio = 0.2
+test_ratio = None
+first_n_rows = 100000
 window_size = 10
 stride = 1
 
@@ -38,7 +39,7 @@ pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
 deduplicate_windows = True
-cache = True
+cache = False
 
 log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
 if not os.path.isfile(log_file):
@@ -52,6 +53,7 @@ if __name__ == "__main__":
         log_file,
         label_file=label_file,
         test_ratio=test_ratio,
+        first_n_rows=first_n_rows,
         sequential_partition=sequential_partition,
         random_seed=random_seed,
     )
