@@ -54,7 +54,7 @@ if __name__ == "__main__":
     session_train, session_test = load_HDFS(
         log_file=log_file,
         label_file=label_file,
-        test_ratio=0.2,
+        test_ratio=0.8,
         sequential_partition=False,
         random_seed=42,
     )

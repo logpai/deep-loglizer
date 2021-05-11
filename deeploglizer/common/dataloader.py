@@ -48,6 +48,7 @@ def load_BGL(log_file, label_file, sequential_partition=False, random_seed=42):
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Timestamp"], inplace=True)
 
+    labels = struct_log["Label"].map(lambda x: x != "-").astype(int)
     train_test_split(
         session_ids,
         session_labels,
