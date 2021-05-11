@@ -115,6 +115,8 @@ def load_HDFS(
             blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
             blkId_set = set(blkId_list)
             for blk_Id in blkId_set:
+                if blk_Id == "blk_-1608999687919862906":
+                    continue
                 if idx < first_n_rows:
                     if blk_Id not in session_train:
                         session_train[blk_Id] = defaultdict(list)

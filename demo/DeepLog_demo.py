@@ -39,7 +39,7 @@ pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
 deduplicate_windows = False
-cache = True
+cache = False
 
 log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
 if not os.path.isfile(log_file):
