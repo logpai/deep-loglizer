@@ -21,7 +21,7 @@ random_seed = 42
 device = 0
 
 label_type = "next_log"
-feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
+feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 window_size = 10
 stride = 1
 
