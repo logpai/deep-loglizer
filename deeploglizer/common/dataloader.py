@@ -62,7 +62,7 @@ def load_HDFS(
     """
     print("Loading logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
-    # struct_log.sort_values(by=["Date", "Time"], inplace=True)
+    struct_log.sort_values(by=["Date", "Time"], inplace=True)
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
@@ -129,8 +129,8 @@ def load_HDFS(
                     session_test[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
-            if blk_count >= 30000:
-                break
+            # if blk_count >= 30000:
+            #     break
         session_labels_train = []
         session_labels_test = []
 
@@ -152,6 +152,10 @@ def load_HDFS(
         "# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly_ratio)
     )
     print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
+
+    import sys
+
+    sys.exit()
     return session_train, session_test
 
 
