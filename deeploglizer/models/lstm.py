@@ -49,8 +49,9 @@ class LSTM(ForcastBasedModel):
     def forward(self, input_dict):
         y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
-        x = input_dict["features"]
-        x = self.embedder(x)
+        x = input_dict["features"].unsqueeze(-1)
+
+        # x = self.embedder(x)
 
         if self.feature_type == "semantics":
             if not self.use_tfidf:

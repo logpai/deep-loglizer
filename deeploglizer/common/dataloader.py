@@ -98,16 +98,18 @@ def load_HDFS(
             random_state=random_seed,
         )
 
-        # session_train = {
-        #     k: session_dict[k] for k in session_id_train if session_dict[k]["label"] == 0
-        # }
-        session_train = {k: session_dict[k] for k in session_id_train}
+        session_train = {
+            k: session_dict[k]
+            for k in session_id_train
+            if session_dict[k]["label"] == 0
+        }
         session_test = {k: session_dict[k] for k in session_id_test}
     else:
         print("Using first {} rows to build training data.".format(first_n_rows))
         session_train = OrderedDict()
         session_test = OrderedDict()
         column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
+        blk_count = 0
         for idx, row in enumerate(struct_log.values):
             blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
             blkId_set = set(blkId_list)
@@ -121,14 +123,19 @@ def load_HDFS(
                 else:
                     if blk_Id not in session_test:
                         session_test[blk_Id] = defaultdict(list)
+                        blk_count += 1
                     session_test[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
+            if blk_count >= 50000:
+                break
         session_labels_train = []
         session_labels_test = []
         for k in session_train.keys():
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
+        session_train = {k: v for k, v in session_train.items() if v["label"] == 0}
+
         for k in session_test.keys():
             session_test[k]["label"] = label_data_dict[k]
             session_labels_test.append(label_data_dict[k])

@@ -31,14 +31,14 @@ use_tfidf = False
 
 hidden_size = 128
 num_directions = 2
-embedding_dim = 16
+embedding_dim = 1
 
 max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
 pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
 
-deduplicate_windows = True
+deduplicate_windows = False
 cache = False
 
 log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
