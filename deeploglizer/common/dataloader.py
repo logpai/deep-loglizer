@@ -176,6 +176,14 @@ def load_HDFS_semantic(log_semantic_path):
 
     with open(test, "rb") as fr:
         session_test = pickle.load(fr)
+
+    print(
+        "# train sessions: {}, # test sessions: {}".format(
+            len(session_train), len(session_test)
+        )
+    )
+    session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
+
     return session_train, session_test
 
 
@@ -207,5 +215,6 @@ def load_HDFS_id(log_id_path):
             len(session_train), len(session_test)
         )
     )
+
     # print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
     return session_train, session_test
