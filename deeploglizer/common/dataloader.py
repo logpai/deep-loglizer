@@ -153,6 +153,8 @@ def load_HDFS(
             random_state=random_seed,
         )
 
+        print("Total # sessions: {}".format(len(session_ids)))
+
         session_train = {
             k: session_dict[k]
             for k in session_id_train
@@ -185,22 +187,12 @@ def load_HDFS(
                     session_test[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
-            # if blk_count >= 30000:
-            #     break
 
         tmp_dict = defaultdict(list)
         for k in session_train.keys():
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
 
-        # tmp_train = {}
-        # for k, v in session_train.items():
-        #     # if v["label"] == 0:
-        #     # tmp_train[k] = v
-        #     print(decision(train_anomaly_ratio))
-        #     if decision(train_anomaly_ratio):
-        #         tmp_train[k] = v
-        # session_train = tmp_train
         session_train = {
             k: v
             for k, v in session_train.items()
