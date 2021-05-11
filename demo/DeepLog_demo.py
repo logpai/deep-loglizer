@@ -22,9 +22,6 @@ device = 0
 
 label_type = "next_log"
 feature_type = "semantics"  # "sequentials", "semantics", "quantitatives"
-sequential_partition = False
-test_ratio = None
-first_n_rows = 100000
 window_size = 10
 stride = 1
 
@@ -53,15 +50,6 @@ label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 if __name__ == "__main__":
     seed_everything(random_seed)
-
-    # session_train, session_test = load_HDFS(
-    #     log_file,
-    #     label_file=label_file,
-    #     test_ratio=test_ratio,
-    #     first_n_rows=first_n_rows,
-    #     sequential_partition=sequential_partition,
-    #     random_seed=random_seed,
-    # )
 
     session_train, session_test = load_HDFS_semantic("../data/HDFS_semantic")
 

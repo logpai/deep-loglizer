@@ -174,7 +174,7 @@ def load_HDFS_semantic(log_semantic_path):
     with open(test, "rb") as fr:
         session_test = pickle.load(fr)
 
-    session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
+    # session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
     print(
         "# train sessions: {}, # test sessions: {}".format(
             len(session_train), len(session_test)
