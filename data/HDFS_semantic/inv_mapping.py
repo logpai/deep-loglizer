@@ -32,9 +32,10 @@ session_test_anomaly = convert(test_anomaly, mapping)
 session_test.update(session_test_normal)
 session_test.update(session_test_anomaly)
 
+session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
+
 with open("session_train.pkl", "wb") as fw:
     pickle.dump(session_train, fw)
 
 with open("session_test.pkl", "wb") as fw:
     pickle.dump(session_test, fw)
-
