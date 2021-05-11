@@ -61,7 +61,7 @@ def load_HDFS(
     """
     print("Loading logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
-    struct_log.sort_values(by=["Date", "Time"], inplace=True)
+    # struct_log.sort_values(by=["Date", "Time"], inplace=True)
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
@@ -128,8 +128,8 @@ def load_HDFS(
                     session_test[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
-            if blk_count >= 50000:
-                break
+            # if blk_count >= 50000:
+            #     break
         session_labels_train = []
         session_labels_test = []
 
@@ -138,17 +138,8 @@ def load_HDFS(
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
 
-            num = len(session_train[k]["templates"])
-            tmp_dict["num"].append(num)
-            tmp_dict["k"].append(k)
+        session_train = {k: v for k, v in session_train.items() if v["label"] == 0}
 
-        session_train = {
-            k: v
-            for k, v in session_train.items()
-            if v["label"] == 0 and len(v["templates"]) < 50
-        }
-
-        pd.DataFrame(tmp_dict).to_csv("tmp.csv", index=False)
         for k in session_test.keys():
             session_test[k]["label"] = label_data_dict[k]
             session_labels_test.append(label_data_dict[k])

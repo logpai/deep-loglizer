@@ -123,7 +123,7 @@ class ForcastBasedModel(nn.Module):
             for batch_input in test_loader:
                 return_dict = self.forward(self.__input2device(batch_input))
                 y_pred = return_dict["y_pred"]
-                y_pred_topk = torch.topk(y_pred, self.topk)[1]  # b x topk
+                y_prob_topk, y_pred_topk = torch.topk(y_pred, self.topk)  # b x topk
 
                 store_dict["session_idx"].extend(
                     tensor2flatten_arr(batch_input["session_idx"])
@@ -136,9 +136,11 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["x"].extend(batch_input["features"].data.cpu().numpy())
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
+                store_dict["y_prob_topk"].extend(y_pred.data.cpu().numpy())
             infer_end = time.time()
             print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             store_df = pd.DataFrame(store_dict)
+            store_df.to_csv(f"store_df_{dtype}.csv", index=False)
             best_result = None
             best_f1 = -float("inf")
 
