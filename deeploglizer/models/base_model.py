@@ -200,7 +200,5 @@ class ForcastBasedModel(nn.Module):
                 "Epoch {}/{}, training loss: {:.5f}".format(epoch, epoches, epoch_loss)
             )
             if test_loader is not None and (epoch % 5 == 0):
-                print("Evaluating train.")
-                self.evaluate(train_loader)
                 print("Evaluating test.")
                 self.evaluate(test_loader)
