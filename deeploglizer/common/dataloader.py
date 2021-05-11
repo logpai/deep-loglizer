@@ -115,8 +115,6 @@ def load_HDFS(
             blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
             blkId_set = set(blkId_list)
             for blk_Id in blkId_set:
-                if blk_Id == "blk_-1608999687919862906":
-                    continue
                 if idx < first_n_rows:
                     if blk_Id not in session_train:
                         session_train[blk_Id] = defaultdict(list)
@@ -134,11 +132,18 @@ def load_HDFS(
                 break
         session_labels_train = []
         session_labels_test = []
+
+        tmp_dict = defaultdict(list)
         for k in session_train.keys():
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
+
+            num = len(session_train[k]["templates"])
+            tmp_dict["num"].append(num)
+            tmp_dict["k"].append(k)
         session_train = {k: v for k, v in session_train.items() if v["label"] == 0}
 
+        pd.DataFrame(tmp_dict).to_csv("tmp.csv", index=False)
         for k in session_test.keys():
             session_test[k]["label"] = label_data_dict[k]
             session_labels_test.append(label_data_dict[k])
