@@ -5,7 +5,12 @@ import sys
 
 sys.path.append("../")
 from deeploglizer.models import LSTM
-from deeploglizer.common.dataloader import load_HDFS, log_dataset, load_HDFS_id
+from deeploglizer.common.dataloader import (
+    load_HDFS,
+    log_dataset,
+    load_HDFS_id,
+    load_HDFS_semantic,
+)
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, set_device
 from torch.utils.data import DataLoader
@@ -49,16 +54,16 @@ label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 if __name__ == "__main__":
     seed_everything(random_seed)
 
-    session_train, session_test = load_HDFS(
-        log_file,
-        label_file=label_file,
-        test_ratio=test_ratio,
-        first_n_rows=first_n_rows,
-        sequential_partition=sequential_partition,
-        random_seed=random_seed,
-    )
+    # session_train, session_test = load_HDFS(
+    #     log_file,
+    #     label_file=label_file,
+    #     test_ratio=test_ratio,
+    #     first_n_rows=first_n_rows,
+    #     sequential_partition=sequential_partition,
+    #     random_seed=random_seed,
+    # )
 
-    # session_train, session_test = load_HDFS_id("../data/HDFS_id")
+    session_train, session_test = load_HDFS_semantic("../data/HDFS_semantic")
 
     ext = FeatureExtractor(
         label_type=label_type,  # "none", "next_log", "anomaly"

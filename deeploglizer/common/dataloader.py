@@ -11,6 +11,7 @@ import pandas as pd
 import os
 import numpy as np
 import re
+import pickle
 from sklearn.utils import shuffle
 from collections import OrderedDict, defaultdict
 from sklearn.model_selection import train_test_split
@@ -140,7 +141,11 @@ def load_HDFS(
             session_train[k]["label"] = label_data_dict[k]
             session_labels_train.append(label_data_dict[k])
 
-        session_train = {k: v for k, v in session_train.items() if v["label"] == 0}
+        session_train = {
+            k: v
+            for k, v in session_train.items()
+            if v["label"] == 0 and 13 <= len(v["templates"]) <= 42
+        }
 
         for k in session_test.keys():
             session_test[k]["label"] = label_data_dict[k]
@@ -159,6 +164,18 @@ def load_HDFS(
     import sys
 
     sys.exit()
+    return session_train, session_test
+
+
+def load_HDFS_semantic(log_semantic_path):
+    train = os.path.join(log_semantic_path, "session_train.pkl")
+    test = os.path.join(log_semantic_path, "session_test.pkl")
+
+    with open(train, "rb") as fr:
+        session_train = pickle.load(fr)
+
+    with open(test, "rb") as fr:
+        session_test = pickle.load(fr)
     return session_train, session_test
 
 

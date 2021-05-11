@@ -1,0 +1,29 @@
+1.Adding an already existing block <*>
+2.<*>Verification succeeded for <*>
+3.<*> Served block <*> to <*>
+4.<*>:Got exception while serving <*> to <*>:<*>
+5.Receiving block <*> src: <*> dest: <*>
+6.Received block <*> src: <*> dest: <*> of size ([-]?[0-9]+)
+7.writeBlock <*> received exception <*>
+8.PacketResponder ([-]?[0-9]+) for block <*> Interrupted\.
+9.Received block <*> of size ([-]?[0-9]+) from <*>
+10.PacketResponder <*> ([-]?[0-9]+) Exception <*>
+11.PacketResponder ([-]?[0-9]+) for block <*> terminating
+12.<*>:Exception writing block <*> to mirror <*><*>
+13.Receiving empty packet for block <*>
+14.Exception in receiveBlock for block <*> <*>
+15.Changing block file offset of block <*> from ([-]?[0-9]+) to ([-]?[0-9]+) meta file offset to ([-]?[0-9]+)
+16.<*>:Transmitted block <*> to <*>
+17.<*>:Failed to transfer <*> to <*> got <*>
+18.<*> Starting thread to transfer block <*> to <*>
+19.Reopen Block <*>
+20.Unexpected error trying to delete block <*>\. BlockInfo not found in volumeMap\.
+21.Deleting block <*> file <*>
+22.BLOCK\* NameSystem\.allocateBlock: <*>\. <*>
+23.BLOCK\* NameSystem\.delete: <*> is added to invalidSet of <*>
+24.BLOCK\* Removing block <*> from neededReplications as it does not belong to any file\.
+25.BLOCK\* ask <*> to replicate <*> to <*>
+26.BLOCK\* NameSystem\.addStoredBlock: blockMap updated: <*> is added to <*> size ([-]?[0-9]+)
+27.BLOCK\* NameSystem\.addStoredBlock: Redundant addStoredBlock request received for <*> on <*> size ([-]?[0-9]+)
+28.BLOCK\* NameSystem\.addStoredBlock: addStoredBlock request received for <*> on <*> size ([-]?[0-9]+) But it does not belong to any file.
+29.PendingReplicationMonitor timed out block <*>
