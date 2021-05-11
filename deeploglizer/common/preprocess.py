@@ -121,6 +121,7 @@ class FeatureExtractor(BaseEstimator):
         self,
         label_type="next_log",  # "none", "next_log", "anomaly"
         feature_type="sequentials",
+        eval_type="session",
         window_type="sliding",
         window_size=None,
         stride=None,
@@ -133,6 +134,7 @@ class FeatureExtractor(BaseEstimator):
     ):
         self.label_type = label_type
         self.feature_type = feature_type
+        self.eval_type = eval_type
         self.window_type = window_type
         self.window_size = window_size
         self.stride = stride
@@ -161,51 +163,48 @@ class FeatureExtractor(BaseEstimator):
                 i = 0
                 templates = data_dict["templates"]
                 template_len = len(templates)
-                if template_len == 1:
-                    continue
                 windows = []
                 window_labels = []
+                window_anomalies = []
                 while i + self.window_size < template_len:
-                    windows.append(templates[i : i + self.window_size])
-                    if self.label_type == "next_log":
-                        window_labels.append(
-                            self.log2id_train.get(templates[i + self.window_size], 1)
+                    window = templates[i : i + self.window_size]
+                    next_log = self.log2id_train.get(templates[i + self.window_size], 1)
+
+                    if session_id == "all":
+                        window_anomaly = int(
+                            1 in data_dict["label"][i : i + self.window_size]
                         )
-                    elif self.label_type == "anomaly":
-                        if session_id == "all":
-                            label = int(
-                                1 in data_dict["label"][i : i + self.window_size]
-                            )
-                            window_labels.append(label)
-                        else:
-                            window_labels.append(data_dict["label"])
-                    elif self.label_type == "none":
-                        window_labels.append(None)
+                    else:
+                        window_anomaly = data_dict["label"]
+
+                    windows.append(window)
+                    window_labels.append(next_log)
+                    window_anomalies.append(window_anomaly)
                     i += stride
                 else:
-                    if self.label_type == "next_log":
-                        window = templates[i:-1]
-                        window.extend(
-                            ["padding_token"] * (self.window_size - len(window))
-                        )
-                        windows.append(window)
-                        window_labels.append(self.log2id_train.get(templates[-1], 1))
-                    elif self.label_type == "anomaly":
-                        if session_id == "all":
-                            label = int(
-                                1 in data_dict["label"][i : i + self.window_size]
-                            )
-                            window_labels.append(label)
-                        else:
-                            window_labels.append(data_dict["label"])
+                    window = templates[i:-1]
+                    window.extend(["padding_token"] * (self.window_size - len(window)))
+                    next_log = self.log2id_train.get(templates[-1], 1)
+
+                    if session_id == "all":
+                        window_anomaly = int(1 in data_dict["label"][i:-1])
+                    else:
+                        window_anomaly = data_dict["label"]
+
+                    windows.append(window)
+                    window_labels.append(next_log)
+                    window_anomalies.append(window_anomaly)
+
                 if self.deduplicate_windows:
                     print("Deduplicating windows...")
                     windows, uidx = np.unique(windows, axis=0, return_index=True)
                     window_labels = np.array(window_labels)[uidx]
+                    window_anomalies = np.array(window_anomalies)[uidx]
                 window_count += len(windows)
 
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
+                session_dict[session_id]["window_anomalies"] = window_anomalies
 
             elif self.window_type == "session":
                 session_dict[session_id]["windows"] = data_dict["templates"]

@@ -84,8 +84,8 @@ class ForcastBasedModel(nn.Module):
                 store_dict["session_idx"].extend(
                     tensor2flatten_arr(batch_input["session_idx"])
                 )
-                store_dict["session_labels"].extend(
-                    tensor2flatten_arr(batch_input["session_labels"])
+                store_dict["window_anomalies"].extend(
+                    tensor2flatten_arr(batch_input["window_anomalies"])
                 )
                 store_dict["session_probs"].extend(tensor2flatten_arr(y_prob))
                 store_dict["session_preds"].extend(tensor2flatten_arr(y_pred))
@@ -96,12 +96,12 @@ class ForcastBasedModel(nn.Module):
             ).astype(int)
 
             # session_df = (
-            #     store_df[["session_idx", "session_labels", "window_anomaly"]]
+            #     store_df[["session_idx", "window_anomalies", "window_anomaly"]]
             #     .groupby("session_idx", as_index=False)
             #     .sum()
             # )
             # session_df.to_csv(f"sess_df_{topk}.csv", index=False)
-            # y = (session_df["session_labels"] > 0).astype(int)
+            # y = (session_df["window_anomalies"] > 0).astype(int)
             # pred = (session_df["window_anomaly"] > 0).astype(int)
             # window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
             # eval_results = {
@@ -128,8 +128,8 @@ class ForcastBasedModel(nn.Module):
                 store_dict["session_idx"].extend(
                     tensor2flatten_arr(batch_input["session_idx"])
                 )
-                store_dict["session_labels"].extend(
-                    tensor2flatten_arr(batch_input["session_labels"])
+                store_dict["window_anomalies"].extend(
+                    tensor2flatten_arr(batch_input["window_anomalies"])
                 )
                 store_dict["window_labels"].extend(
                     tensor2flatten_arr(batch_input["window_labels"])
@@ -152,7 +152,7 @@ class ForcastBasedModel(nn.Module):
                 # store_df.to_csv(f"store_df_{dtype}.csv", index=False)
                 if self.eval_type == "session":
                     session_df = (
-                        store_df[["session_idx", "session_labels", "window_anomaly"]]
+                        store_df[["session_idx", "window_anomalies", "window_anomaly"]]
                         .groupby("session_idx", as_index=False)
                         .sum()
                     )
@@ -160,7 +160,7 @@ class ForcastBasedModel(nn.Module):
                     session_df = store_df
                 # session_df.to_csv(f"session_df_{dtype}.csv", index=False)
 
-                y = (session_df["session_labels"] > 0).astype(int)
+                y = (session_df["window_anomalies"] > 0).astype(int)
                 pred = (session_df["window_anomaly"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
                 eval_results = {
@@ -170,13 +170,13 @@ class ForcastBasedModel(nn.Module):
                     "top{}-acc".format(topk): window_topk_acc,
                 }
 
+                print(eval_results)
                 if eval_results["f1"] >= best_f1:
                     best_result = eval_results
                     best_f1 = eval_results["f1"]
             count_end = time.time()
             print("Finish counting. [{:.2f}s]".format(count_end - count_start))
 
-            print(best_result)
             return best_result
 
     def __input2device(self, batch_input):

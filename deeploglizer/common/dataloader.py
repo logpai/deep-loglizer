@@ -26,13 +26,14 @@ class log_dataset(Dataset):
         # flatten all sessions
         for session_idx, data_dict in enumerate(session_dict.values()):
             features = data_dict["features"][feature_type]
-            labels = data_dict["window_labels"]
-            for window_idx in range(len(labels)):
+            window_labels = data_dict["window_labels"]
+            window_anomalies = data_dict["window_anomalies"]
+            for window_idx in range(len(window_labels)):
                 sample = {
                     "session_idx": session_idx,  # not session id
                     "features": features[window_idx],
-                    "window_labels": labels[window_idx],
-                    "session_labels": data_dict["label"],
+                    "window_labels": window_labels[window_idx],
+                    "window_anomalies": window_anomalies[window_idx],
                 }
                 flatten_data_list.append(sample)
         self.flatten_data_list = flatten_data_list
@@ -45,11 +46,15 @@ class log_dataset(Dataset):
         return self.flatten_data_list[idx]
 
 
-def load_BGL(log_file, test_ratio=0.8, sequential_partition=False, random_seed=42):
+def load_BGL(
+    log_file,
+    test_ratio=0.8,
+    train_anomaly_ratio=0,
+    sequential_partition=False,
+    random_seed=42,
+):
     print("Loading logs from {}.".format(log_file))
-    struct_log = pd.read_csv(
-        log_file, engine="c", na_filter=False, memory_map=True, nrows=10000
-    )
+    struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Timestamp"], inplace=True)
 
     templates = struct_log["EventTemplate"].values
@@ -63,12 +68,30 @@ def load_BGL(log_file, test_ratio=0.8, sequential_partition=False, random_seed=4
         random_state=random_seed,
     )
 
+    idx_train = [
+        idx
+        for idx in idx_train
+        if (
+            labels_train[idx] == 0
+            or (labels_train[idx] == 1 and decision(train_anomaly_ratio))
+        )
+    ]
+
     session_train = {
         "all": {"templates": templates[idx_train].tolist(), "label": labels[idx_train]}
     }
     session_test = {
         "all": {"templates": templates[idx_test].tolist(), "label": labels[idx_test]}
     }
+
+    labels_train = labels_train[idx_train]
+
+    train_anomaly = 100 * sum(labels_train) / len(labels_train)
+    test_anomaly = 100 * sum(labels_test) / len(labels_test)
+
+    print("# train lines: {} ({:.2f}%)".format(len(labels_train), train_anomaly))
+    print("# test lines: {} ({:.2f}%)".format(len(labels_test), test_anomaly))
+
     return session_train, session_test
 
 
