@@ -115,14 +115,15 @@ def load_HDFS(
         for idx, row in enumerate(struct_log.values):
             blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
             blkId_set = set(blkId_list)
-            for blk_Id in blkId_set:
-                if idx < first_n_rows:
+            if idx < first_n_rows:
+                for blk_Id in blkId_set:
                     if blk_Id not in session_train:
                         session_train[blk_Id] = defaultdict(list)
                     session_train[blk_Id]["templates"].append(
                         row[column_idx["EventTemplate"]]
                     )
-                else:
+            else:
+                for blk_Id in blkId_set:
                     if blk_Id not in session_test:
                         session_test[blk_Id] = defaultdict(list)
                         blk_count += 1
