@@ -152,3 +152,31 @@ def load_HDFS(
     )
     print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
     return session_train, session_test
+
+
+def load_HDFS_id(log_id_path):
+    train = os.path.join(log_id_path, "hdfs_train")
+    test_normal = os.path.join(log_id_path, "hdfs_test_normal")
+    test_anomaly = os.path.join(log_id_path, "hdfs_test_abnormal")
+
+    session_train = {}
+    for idx, line in enumerate(open(train)):
+        sample = {"templates": line.split(), "label": 0}
+        session_train[idx] = sample
+
+    session_test = {}
+    for idx, line in enumerate(open(test_normal)):
+        sample = {"templates": line.split(), "label": 0}
+        session_test[idx] = sample
+
+    for idx, line in enumerate(open(test_anomaly)):
+        sample = {"templates": line.split(), "label": 1}
+        session_test[idx] = sample
+
+    print(
+        "# train sessions: {}, # test sessions: {}".format(
+            len(session_train), len(session_test)
+        )
+    )
+    # print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
+    return session_train, session_test
