@@ -52,7 +52,7 @@ class LSTM(ForcastBasedModel):
         self.batch_size = y.size()[0]
         x = input_dict["features"]
         if self.embedding_dim == 1:
-            x = x.unsequeeze(-1)
+            x = x.unsqueeze(-1)
         else:
             x = self.embedder(x)
 
