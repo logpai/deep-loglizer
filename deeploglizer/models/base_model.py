@@ -144,39 +144,45 @@ class ForcastBasedModel(nn.Module):
             best_f1 = -float("inf")
 
             count_start = time.time()
-            for topk in range(1, self.topk):
-                store_df["window_anomaly"] = store_df.apply(
-                    lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
-                ).astype(int)
 
-                # store_df.to_csv(f"store_df_{dtype}.csv", index=False)
-                if self.eval_type == "session":
-                    session_df = (
-                        store_df[["session_idx", "window_anomalies", "window_anomaly"]]
-                        .groupby("session_idx", as_index=False)
-                        .sum()
-                    )
-                else:
-                    session_df = store_df
-                # session_df.to_csv(f"session_df_{dtype}.csv", index=False)
+            topk_res = defaultdict(list)
+            window_labels = store_df["window_labels"].values
+            y_pred_topk = store_df["y_pred_topk"].values
+            for i in range(window_labels.shape[0]):
+                for topk in range(self.topk):
+                    candidates = y_pred_topk[i][:topk]
+                    window_anomaly = int(window_labels[i] not in candidates)
+                    topk_res[f"window_pred_anomaly_{topk}"].append(window_anomaly)
+            topk_res = pd.DataFrame(topk_res)
 
+            store_df = pd.concat([store_df, topk_res], axis=1)
+
+            if self.eval_type == "session":
+                use_cols = ["session_idx", "window_anomalies"] + [
+                    f"window_pred_anomaly_{topk}" for topk in range(self.topk)
+                ]
+                session_df = (
+                    store_df[use_cols].groupby("session_idx", as_index=False).sum()
+                )
+            else:
+                session_df = store_df
+
+            for topk in range(self.topk):
+                pred = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int)
                 y = (session_df["window_anomalies"] > 0).astype(int)
-                pred = (session_df["window_anomaly"] > 0).astype(int)
-                window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
+                window_topk_acc = 1 - store_df["window_anomalies"].sum() / len(store_df)
                 eval_results = {
                     "f1": f1_score(y, pred),
                     "rc": recall_score(y, pred),
                     "pc": precision_score(y, pred),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
-
                 print(eval_results)
                 if eval_results["f1"] >= best_f1:
                     best_result = eval_results
                     best_f1 = eval_results["f1"]
             count_end = time.time()
             print("Finish counting. [{:.2f}s]".format(count_end - count_start))
-
             return best_result
 
     def __input2device(self, batch_input):
