@@ -21,12 +21,13 @@ from IPython import embed
 parser = argparse.ArgumentParser()
 parser.add_argument("--test_ratio", default=0.2, type=float, help="test_ratio")
 parser.add_argument(
-    "--train_anomaly_ratio", default=0, type=float, help="train_anomaly_ratio"
+    "--train_anomaly_ratio", default=1, type=float, help="train_anomaly_ratio"
 )
 parser.add_argument(
     "--feature_type", default="sequentials", type=str, help="feature_type"
 )  # "sequentials", "semantics", "quantitatives"
 parser.add_argument("--dataset", default="HDFS", type=str, help="dataset")
+parser.add_argument("--label_type", default="anomaly", type=str, help="label_type")
 parser.add_argument("--gpu", default=0, type=int, help="gpu id")
 args = vars(parser.parse_args())
 
@@ -39,7 +40,7 @@ dataset = args["dataset"]
 
 
 random_seed = 42
-label_type = "next_log"
+label_type = "anomaly"
 eval_type = "window" if dataset == "BGL" else "session"
 window_size = 10
 stride = 1

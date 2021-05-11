@@ -87,31 +87,29 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_anomalies"].extend(
                     tensor2flatten_arr(batch_input["window_anomalies"])
                 )
-                store_dict["session_probs"].extend(tensor2flatten_arr(y_prob))
-                store_dict["session_preds"].extend(tensor2flatten_arr(y_pred))
+                store_dict["window_probs"].extend(tensor2flatten_arr(y_prob))
+                store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
 
             store_df = pd.DataFrame(store_dict)
-            store_df["window_anomaly"] = store_df.apply(
-                lambda x: x["window_labels"] not in x["y_pred_topk"][0:topk], axis=1
-            ).astype(int)
 
-            # session_df = (
-            #     store_df[["session_idx", "window_anomalies", "window_anomaly"]]
-            #     .groupby("session_idx", as_index=False)
-            #     .sum()
-            # )
-            # session_df.to_csv(f"sess_df_{topk}.csv", index=False)
-            # y = (session_df["window_anomalies"] > 0).astype(int)
-            # pred = (session_df["window_anomaly"] > 0).astype(int)
-            # window_topk_acc = 1 - store_df["window_anomaly"].sum() / len(store_df)
-            # eval_results = {
-            #     "f1": f1_score(y, pred),
-            #     "rc": recall_score(y, pred),
-            #     "pc": precision_score(y, pred),
-            #     "top{}-acc".format(topk): window_topk_acc,
-            # }
+            if self.eval_type == "session":
+                use_cols = ["session_idx", "window_anomalies", "window_preds"]
+                session_df = (
+                    store_df[use_cols].groupby("session_idx", as_index=False).sum()
+                )
+            else:
+                session_df = store_df
 
-            # print(best_result)
+            pred = (session_df[f"window_preds"] > 0).astype(int)
+            y = (session_df["window_anomalies"] > 0).astype(int)
+
+            eval_results = {
+                "f1": f1_score(y, pred),
+                "rc": recall_score(y, pred),
+                "pc": precision_score(y, pred),
+                "acc": accuracy_score(y, pred),
+            }
+            print(eval_results)
             return eval_results
 
     def evaluate_next_log(self, test_loader, dtype="test"):

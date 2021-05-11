@@ -34,6 +34,7 @@ class LSTM(ForcastBasedModel):
         )
         num_labels = meta_data["num_labels"]
         self.feature_type = feature_type
+        self.label_type = label_type
         self.hidden_size = hidden_size
         self.num_directions = num_directions
         self.use_tfidf = use_tfidf
@@ -50,7 +51,10 @@ class LSTM(ForcastBasedModel):
         )
 
     def forward(self, input_dict):
-        y = input_dict["window_labels"].long().view(-1)
+        if self.label_type == "anomaly":
+            y = input_dict["window_anomalies"].long().view(-1)
+        elif self.label_type == "next_log":
+            y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
         x = input_dict["features"]
         if self.embedding_dim == 1:
