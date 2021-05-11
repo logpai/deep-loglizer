@@ -15,7 +15,7 @@ from IPython import embed
 random_seed = 42
 device = 0
 
-label_type = "anomaly"
+label_type = "next_log"
 feature_type = "sequentials"  # "sequentials", "semantics", "quantitatives"
 sequential_partition = False
 test_ratio = 0.2
@@ -36,6 +36,9 @@ max_token_len = 50  # max #token for each event [semantic only]
 min_token_count = 1  # min # occurrence of token for each event [semantic only]
 pretrain_path = None
 # pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
+
+deduplicate_windows = True
+cache = True
 
 log_file = "../data/HDFS/HDFS.log_groundtruth.csv"  # The structured log file
 if not os.path.isfile(log_file):
@@ -63,6 +66,8 @@ if __name__ == "__main__":
         min_token_count=min_token_count,
         pretrain_path=pretrain_path,
         use_tfidf=use_tfidf,
+        deduplicate_windows=deduplicate_windows,
+        cache=cache,
     )
 
     session_train = ext.fit_transform(session_train)

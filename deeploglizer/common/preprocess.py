@@ -128,6 +128,7 @@ class FeatureExtractor(BaseEstimator):
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
+        deduplicate_windows=True,
         cache=False,
     ):
         self.label_type = label_type
@@ -139,6 +140,7 @@ class FeatureExtractor(BaseEstimator):
         self.use_tfidf = use_tfidf
         self.max_token_len = max_token_len
         self.min_token_count = min_token_count
+        self.deduplicate_windows = deduplicate_windows
         self.cache = cache
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
