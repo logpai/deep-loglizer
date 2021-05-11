@@ -3,10 +3,10 @@ import pandas as pd
 import pickle
 
 
-def convert(filepath, mapping):
+def convert(filepath, mapping, label):
     session = {}
     for idx, line in enumerate(open(filepath)):
-        sample = {"templates": [mapping[item] for item in line.split()], "label": 0}
+        sample = {"templates": [mapping[item] for item in line.split()], "label": label}
         session[idx] = sample
     return session
 
@@ -25,10 +25,10 @@ for line in open(mapping_file):
     mapping[idx] = strs
 
 
-session_train = convert(train, mapping)
+session_train = convert(train, mapping, 0)
 session_test = {}
-session_test_normal = convert(test_normal, mapping)
-session_test_anomaly = convert(test_anomaly, mapping)
+session_test_normal = convert(test_normal, mapping, 0)
+session_test_anomaly = convert(test_anomaly, mapping, 1)
 session_test.update(session_test_normal)
 session_test.update(session_test_anomaly)
 
