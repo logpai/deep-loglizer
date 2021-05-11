@@ -69,7 +69,7 @@ if dataset == "HDFS":
         log_file = "../data/HDFS/HDFS_100k.log_structured.csv"
     label_file = "../data/HDFS/anomaly_label.csv"
 elif dataset == "BGL":
-    log_file = "../data/BGL/BGL.log_structured.csv"
+    log_file = "../data/BGL/BGL.log_groundtruth.csv"
     if not os.path.isfile(log_file):
         log_file = "../data/BGL/BGL_100k.log_structured.csv"
 

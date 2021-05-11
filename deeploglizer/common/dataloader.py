@@ -37,7 +37,6 @@ class log_dataset(Dataset):
                 }
                 flatten_data_list.append(sample)
         self.flatten_data_list = flatten_data_list
-        print("Finish data preprocessing.")
 
     def __len__(self):
         return len(self.flatten_data_list)

@@ -353,7 +353,7 @@ class FeatureExtractor(BaseEstimator):
 
             session_dict[session_id]["features"] = feature_dict
 
-        print("Finish feature extraction.")
+        print("Finish feature extraction ({}).".format(datatype))
         if self.cache:
             dump_pickle(session_dict, cached_file)
         return session_dict
