@@ -20,13 +20,22 @@ from IPython import embed
 # python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--test_ratio", default=0.2, type=float)
-parser.add_argument("--train_anomaly_ratio", default=1, type=float)
+
+# fixed for log anomaly
 parser.add_argument(
     "--feature_type", default="sequentials", type=str
 )  # "sequentials", "semantics", "quantitatives"
+parser.add_argument("--use_attention", default=False, type=bool)
+parser.add_argument("--label_type", default="next_log", type=str)
+parser.add_argument("--use_tfidf", default=False, type=bool)
+parser.add_argument(
+    "--pretrain_path", default=None, type=str
+)  # "../data/pretrain/wiki-news-300d-1M.vec"
+
+
+parser.add_argument("--test_ratio", default=0.2, type=float)
+parser.add_argument("--train_anomaly_ratio", default=1, type=float)
 parser.add_argument("--dataset", default="HDFS", type=str)
-parser.add_argument("--label_type", default="anomaly", type=str)
 parser.add_argument("--gpu", default=0, type=int)
 parser.add_argument("--random_seed", default=42, type=int)
 parser.add_argument("--window_size", default=10, type=int)
@@ -35,17 +44,12 @@ parser.add_argument("--topk", default=8, type=int)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--epoches", default=5, type=int)
 parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--use_attention", default=False, type=bool)
-parser.add_argument("--use_tfidf", default=False, type=bool)
 parser.add_argument("--sequential_partition", default=False, type=bool)
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_directions", default=1, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
 parser.add_argument("--max_token_len", default=50, type=int)
 parser.add_argument("--min_token_count", default=1, type=int)
-parser.add_argument(
-    "--pretrain_path", default=None, type=str
-)  # "../data/pretrain/wiki-news-300d-1M.vec"
 parser.add_argument("--cache", default=False, type=bool)
 params = vars(parser.parse_args())
 
@@ -111,5 +115,5 @@ if __name__ == "__main__":
     )
 
     with open(os.path.join(f"{params['dataset']}_deeplog.txt"), "a+") as fw:
-        info = "{} {} {}\n".format(hash_id, args_str, result_str)
+        info = "{} DeepLog {} {}\n".format(hash_id, args_str, result_str)
         fw.write(info)

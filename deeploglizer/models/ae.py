@@ -23,6 +23,7 @@ class AutoEncoder(ForcastBasedModel):
         hidden_size=100,
         num_directions=2,
         embedding_dim=16,
+        model_save_path="./ae_models",
         feature_type="sequentials",
         label_type="none",
         eval_type="session",
@@ -31,9 +32,11 @@ class AutoEncoder(ForcastBasedModel):
         pretrain_matrix=None,
         freeze=False,
         device=-1,
+        **kwargs
     ):
         super().__init__(
             meta_data=meta_data,
+            model_save_path=model_save_path,
             feature_type=feature_type,
             label_type=label_type,
             eval_type=eval_type,

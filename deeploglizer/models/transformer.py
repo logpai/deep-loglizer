@@ -13,6 +13,7 @@ class Transformer(ForcastBasedModel):
         nhead=4,
         hidden_size=100,
         num_layers=1,
+        model_save_path="./transformer_models",
         feature_type="sequentials",
         label_type="next_log",
         eval_type="session",
@@ -21,9 +22,11 @@ class Transformer(ForcastBasedModel):
         pretrain_matrix=None,
         freeze=False,
         device=-1,
+        **kwargs
     ):
         super().__init__(
             meta_data=meta_data,
+            model_save_path=model_save_path,
             feature_type=feature_type,
             label_type=label_type,
             eval_type=eval_type,
@@ -64,7 +67,8 @@ class Transformer(ForcastBasedModel):
         x_trans = x.transpose(1, 0)
         cls_expand = self.cls.expand(-1, self.batch_size, -1)
         embedding_with_cls = torch.cat([cls_expand, x_trans], dim=0)
-        x_transformed = self.transformer_encoder(embedding_with_cls)
+
+        x_transformed = self.transformer_encoder(embedding_with_cls.float())
         representation = x_transformed[0]
 
         logits = self.prediction_layer(representation)

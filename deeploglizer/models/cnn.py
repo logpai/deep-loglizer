@@ -12,6 +12,7 @@ class CNN(ForcastBasedModel):
         kernel_sizes=[2, 3, 4],
         hidden_size=100,
         embedding_dim=16,
+        model_save_path="./cnn_models",
         feature_type="sequentials",
         label_type="next_log",
         eval_type="session",
@@ -20,9 +21,11 @@ class CNN(ForcastBasedModel):
         pretrain_matrix=None,
         freeze=False,
         device=-1,
+        **kwargs
     ):
         super().__init__(
             meta_data=meta_data,
+            model_save_path=model_save_path,
             feature_type=feature_type,
             label_type=label_type,
             eval_type=eval_type,
