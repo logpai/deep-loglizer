@@ -41,7 +41,7 @@ parser.add_argument("--embedding_dim", default=8, type=int)
 ##### dataset params
 parser.add_argument("--dataset", default="HDFS", type=str)
 parser.add_argument("--train_anomaly_ratio", default=0, type=float)
-parser.add_argument("--sequential_partition", default=False, type=bool)
+parser.add_argument("--sequential_partition", default=True, type=bool)
 parser.add_argument("--test_ratio", default=0.2, type=float)
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
@@ -71,9 +71,10 @@ elif params["dataset"] == "BGL":
     if not os.path.isfile(log_file):
         log_file = "../data/BGL/BGL_100k.log_structured.csv"
     params["log_file"] = log_file
+params["eval_type"] = "window" if params["dataset"] == "BGL" else "session"
 
 model_save_path, hash_id = dump_params(params)
-eval_type = "window" if params["dataset"] == "BGL" else "session"
+
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 

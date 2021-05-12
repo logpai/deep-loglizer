@@ -222,6 +222,7 @@ class ForcastBasedModel(nn.Module):
                 session_df = (
                     store_df[use_cols].groupby("session_idx", as_index=False).sum()
                 )
+                embed()
             else:
                 session_df = store_df
 

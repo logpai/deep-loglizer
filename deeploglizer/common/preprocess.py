@@ -10,6 +10,7 @@ from deeploglizer.common.utils import (
     dump_pickle,
     load_pickle,
 )
+from deeploglizer.common.injection import perturb_hdfs
 import hashlib
 import pickle
 import json
@@ -33,8 +34,6 @@ def load_vectors(fname):
             data[tokens[0]] = map(float, tokens[1:])
     logging.info("Loading vectors from {} done.".format(fname))
 
-    # with open("../data/pretrain/wiki-news-300d-1M.pkl", "wb") as fw:
-    #     pickle.dump(data, fw)
     return data
 
 
@@ -215,6 +214,13 @@ class FeatureExtractor(BaseEstimator):
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
                 session_dict[session_id]["window_anomalies"] = window_anomalies
+
+                if session_id == "all":
+                    logging.info(
+                        "Window anomaly ratio:{:.2f}".format(
+                            sum(window_anomalies) / len(window_anomalies)
+                        )
+                    )
 
             elif self.window_type == "session":
                 session_dict[session_id]["windows"] = data_dict["templates"]

@@ -39,7 +39,7 @@ parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
 parser.add_argument("--dataset", default="HDFS", type=str)
-parser.add_argument("--sequential_partition", default=False, type=bool)
+parser.add_argument("--sequential_partition", default=True, type=bool)
 parser.add_argument("--test_ratio", default=0.2, type=float)
 parser.add_argument("--train_anomaly_ratio", default=1, type=float)
 parser.add_argument("--window_size", default=10, type=int)
