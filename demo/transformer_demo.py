@@ -72,8 +72,9 @@ elif params["dataset"] == "BGL":
         log_file = "../data/BGL/BGL_100k.log_structured.csv"
     params["log_file"] = log_file
 
+params["eval_type"] = "window" if params["dataset"] == "BGL" else "session"
 model_save_path, hash_id = dump_params(params)
-eval_type = "window" if params["dataset"] == "BGL" else "session"
+
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 
