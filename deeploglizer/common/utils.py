@@ -46,9 +46,9 @@ def seed_everything(seed=1234):
     torch.manual_seed(seed)
 
 
-def set_device(device=-1):
-    if device != -1 and torch.cuda.is_available():
-        device = torch.device("cuda:" + str(device))
+def set_device(gpu=-1):
+    if gpu != -1 and torch.cuda.is_available():
+        device = torch.device("cuda:" + str(gpu))
     else:
         device = torch.device("cpu")
     return device

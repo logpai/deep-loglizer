@@ -29,7 +29,6 @@ parser.add_argument("--use_tfidf", default=True, type=bool)
 parser.add_argument("--pretrain_path", default=None, type=str)
 ##################### fixed for LogRobust ↑ ####################
 
-
 ##### for semantics:
 parser.add_argument("--max_token_len", default=50, type=int)
 parser.add_argument("--min_token_count", default=1, type=int)

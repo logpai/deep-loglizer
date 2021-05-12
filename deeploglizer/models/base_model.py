@@ -50,10 +50,10 @@ class ForcastBasedModel(nn.Module):
         embedding_dim,
         pretrain_matrix=None,
         freeze=False,
-        device=-1,
+        gpu=-1,
     ):
         super(ForcastBasedModel, self).__init__()
-        self.device = set_device(device)
+        self.device = set_device(gpu)
         self.topk = topk
         self.meta_data = meta_data
         self.feature_type = feature_type

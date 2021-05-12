@@ -31,7 +31,7 @@ class AutoEncoder(ForcastBasedModel):
         use_tfidf=False,
         pretrain_matrix=None,
         freeze=False,
-        device=-1,
+        gpu=-1,
         **kwargs
     ):
         super().__init__(
@@ -45,7 +45,7 @@ class AutoEncoder(ForcastBasedModel):
             embedding_dim=embedding_dim,
             pretrain_matrix=pretrain_matrix,
             freeze=freeze,
-            device=device,
+            gpu=gpu,
         )
         self.feature_type = feature_type
         self.label_type = label_type

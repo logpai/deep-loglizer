@@ -52,7 +52,7 @@ class LSTM(ForcastBasedModel):
         use_tfidf=False,
         pretrain_matrix=None,
         freeze=False,
-        device=-1,
+        gpu=-1,
         **kwargs
     ):
         super().__init__(
@@ -66,7 +66,7 @@ class LSTM(ForcastBasedModel):
             embedding_dim=embedding_dim,
             pretrain_matrix=pretrain_matrix,
             freeze=freeze,
-            device=device,
+            gpu=gpu,
         )
         num_labels = meta_data["num_labels"]
         self.feature_type = feature_type
