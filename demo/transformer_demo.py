@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser()
 # "sequentials", "semantics", "quantitatives"
 parser.add_argument("--feature_type", default="sequentials", type=str)
 parser.add_argument("--label_type", default="anomaly", type=str)
-parser.add_argument("--use_tfidf", default=False, type=bool)
+parser.add_argument("--use_tfidf", action="store_true")
 # "../data/pretrain/wiki-news-300d-1M.vec"
 parser.add_argument("--pretrain_path", default=None, type=str)
 
@@ -39,7 +39,7 @@ parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
 parser.add_argument("--dataset", default="HDFS", type=str)
-parser.add_argument("--sequential_partition", default=True, type=bool)
+parser.add_argument("--random_partition", action="store_true")
 parser.add_argument("--test_ratio", default=0.2, type=float)
 parser.add_argument("--train_anomaly_ratio", default=1, type=float)
 parser.add_argument("--window_size", default=10, type=int)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             hash_id,
             args_str,
             result_str,
-            model.time_tracker["trian"],
+            model.time_tracker["train"],
             model.time_tracker["test"],
         )
         fw.write(info)
