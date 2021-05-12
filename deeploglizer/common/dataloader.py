@@ -7,6 +7,7 @@ Authors:
 
 """
 
+import logging
 import pandas as pd
 import os
 import numpy as np
@@ -53,10 +54,10 @@ def load_BGL(
     random_seed=42,
     **kwargs
 ):
-    print("Loading BGL logs from {}.".format(log_file))
+    logging.info("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Timestamp"], inplace=True)
-    print("{} lines loaded.".format(struct_log.shape[0]))
+    logging.info("{} lines loaded.".format(struct_log.shape[0]))
 
     templates = struct_log["EventTemplate"].values
     labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
@@ -87,8 +88,8 @@ def load_BGL(
     train_anomaly = 100 * sum(labels_train) / len(labels_train)
     test_anomaly = 100 * sum(labels_test) / len(labels_test)
 
-    print("# train lines: {} ({:.2f}%)".format(len(labels_train), train_anomaly))
-    print("# test lines: {} ({:.2f}%)".format(len(labels_test), test_anomaly))
+    logging.info("# train lines: {} ({:.2f}%)".format(len(labels_train), train_anomaly))
+    logging.info("# test lines: {} ({:.2f}%)".format(len(labels_test), test_anomaly))
 
     return session_train, session_test
 
@@ -113,7 +114,7 @@ def load_HDFS(
     -------
         TODO
     """
-    print("Loading HDFS logs from {}.".format(log_file))
+    logging.info("Loading HDFS logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Date", "Time"], inplace=True)
 
@@ -153,7 +154,7 @@ def load_HDFS(
             random_state=random_seed,
         )
 
-        print("Total # sessions: {}".format(len(session_ids)))
+        logging.info("Total # sessions: {}".format(len(session_ids)))
 
         session_train = {
             k: session_dict[k]
@@ -164,7 +165,7 @@ def load_HDFS(
 
         session_test = {k: session_dict[k] for k in session_id_test}
     else:
-        print("Using first {} rows to build training data.".format(first_n_rows))
+        logging.info("Using first {} rows to build training data.".format(first_n_rows))
         session_train = OrderedDict()
         session_test = OrderedDict()
         column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
@@ -208,8 +209,12 @@ def load_HDFS(
     train_anomaly = 100 * sum(session_labels_train) / len(session_labels_train)
     test_anomaly = 100 * sum(session_labels_test) / len(session_labels_test)
 
-    print("# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly))
-    print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly))
+    logging.info(
+        "# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly)
+    )
+    logging.info(
+        "# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly)
+    )
 
     return session_train, session_test
 
@@ -225,7 +230,7 @@ def load_HDFS_semantic(log_semantic_path):
         session_test = pickle.load(fr)
 
     # session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
-    print(
+    logging.info(
         "# train sessions: {}, # test sessions: {}".format(
             len(session_train), len(session_test)
         )
@@ -256,11 +261,11 @@ def load_HDFS_id(log_id_path):
         sample = {"templates": line.split(), "label": 1}
         session_test[idx] = sample
 
-    print(
+    logging.info(
         "# train sessions: {}, # test sessions: {}".format(
             len(session_train), len(session_test)
         )
     )
 
-    # print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
+    # logging.info("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
     return session_train, session_test

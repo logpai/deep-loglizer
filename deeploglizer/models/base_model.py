@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 import torch
 import pandas as pd
 import numpy as np
@@ -96,7 +97,7 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
-            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
 
             store_df = pd.DataFrame(store_dict)
 
@@ -123,7 +124,7 @@ class ForcastBasedModel(nn.Module):
                 "pc": precision_score(y, pred),
                 "acc": accuracy_score(y, pred),
             }
-            print(eval_results)
+            logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
     def __evaluate_anomaly(self, test_loader, dtype="test"):
@@ -145,7 +146,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_probs"].extend(tensor2flatten_arr(y_prob))
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
-            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
 
             store_df = pd.DataFrame(store_dict)
             if self.eval_type == "session":
@@ -164,7 +165,7 @@ class ForcastBasedModel(nn.Module):
                 "pc": precision_score(y, pred),
                 "acc": accuracy_score(y, pred),
             }
-            print(eval_results)
+            logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
     def __evaluate_next_log(self, test_loader, dtype="test"):
@@ -191,7 +192,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
                 store_dict["y_prob_topk"].extend(y_pred.data.cpu().numpy())
             infer_end = time.time()
-            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             store_df = pd.DataFrame(store_dict)
             best_result = None
             best_f1 = -float("inf")
@@ -230,19 +231,19 @@ class ForcastBasedModel(nn.Module):
                     "pc": precision_score(y, pred),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
-                print(eval_results)
+                logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
                 if eval_results["f1"] >= best_f1:
                     best_result = eval_results
                     best_f1 = eval_results["f1"]
             count_end = time.time()
-            print("Finish counting. [{:.2f}s]".format(count_end - count_start))
+            logging.info("Finish counting. [{:.2f}s]".format(count_end - count_start))
             return best_result
 
     def __input2device(self, batch_input):
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
     def save_model(self):
-        print("Saving model to {}".format(self.model_save_file))
+        logging.info("Saving model to {}".format(self.model_save_file))
         try:
             torch.save(
                 self.state_dict(),
@@ -253,12 +254,12 @@ class ForcastBasedModel(nn.Module):
             torch.save(self.state_dict(), self.model_save_file)
 
     def load_model(self, model_save_file=""):
-        print("Loading model from {}".format(self.model_save_file))
+        logging.info("Loading model from {}".format(self.model_save_file))
         self.load_state_dict(torch.load(model_save_file, map_location=self.device))
 
     def fit(self, train_loader, test_loader=None, epoches=10, learning_rate=1.0e-3):
         self.to(self.device)
-        print(
+        logging.info(
             "Start training on {} batches with {}.".format(
                 len(train_loader), self.device
             )
@@ -279,11 +280,11 @@ class ForcastBasedModel(nn.Module):
                 epoch_loss += loss.item()
                 batch_cnt += 1
             epoch_loss = epoch_loss / batch_cnt
-            print(
+            logging.info(
                 "Epoch {}/{}, training loss: {:.5f}".format(epoch, epoches, epoch_loss)
             )
             if test_loader is not None and (epoch % 1 == 0):
-                print("Evaluating test.")
+                logging.info("Evaluating test.")
                 eval_results = self.evaluate(test_loader)
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]

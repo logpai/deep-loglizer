@@ -120,6 +120,6 @@ if __name__ == "__main__":
         ["{}:{}".format(k, v) for k, v in params.items() if k in key_info]
     )
 
-    with open(os.path.join(f"{params['dataset']}_deeplog.txt"), "a+") as fw:
+    with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
         info = "{} AutoEncoder {} {}\n".format(hash_id, args_str, result_str)
         fw.write(info)

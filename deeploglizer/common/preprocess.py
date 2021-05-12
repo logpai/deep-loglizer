@@ -14,6 +14,7 @@ import hashlib
 import pickle
 import json
 import re
+import logging
 
 from IPython import embed
 
@@ -30,7 +31,7 @@ def load_vectors(fname):
         for line in fin:
             tokens = line.rstrip().split(" ")
             data[tokens[0]] = map(float, tokens[1:])
-    print("Loading vectors from {} done.".format(fname))
+    logging.info("Loading vectors from {} done.".format(fname))
 
     # with open("../data/pretrain/wiki-news-300d-1M.pkl", "wb") as fw:
     #     pickle.dump(data, fw)
@@ -58,7 +59,7 @@ class Vocab:
         return word_lst
 
     def gen_pretrain_matrix(self, pretrain_path):
-        print("Generating a pretrain matrix.")
+        logging.info("Generating a pretrain matrix.")
         word_vec_dict = load_vectors(pretrain_path)
         vocab_size = len(self.word2idx)
         pretrain_matrix = np.zeros([vocab_size, 300])
@@ -68,7 +69,7 @@ class Vocab:
                 pretrain_matrix[idx] = word_vec_dict[word]
             else:
                 oov_count += 1
-        print(
+        logging.info(
             "{}/{} words are assgined pretrained vectors.".format(
                 vocab_size - oov_count, vocab_size
             )
@@ -98,7 +99,7 @@ class Vocab:
         self.token_vocab_size = len(self.word2idx)
 
     def fit_tfidf(self, total_logs):
-        print("Fitting tfidf.")
+        logging.info("Fitting tfidf.")
         self.tfidf = TfidfVectorizer(
             tokenizer=lambda x: self.__tokenize_log(x),
             vocabulary=self.word2idx,
@@ -205,7 +206,7 @@ class FeatureExtractor(BaseEstimator):
                     window_anomalies.append(window_anomaly)
 
                 # if self.deduplicate_windows:
-                #     print("Deduplicating windows...")
+                #     logging.info("Deduplicating windows...")
                 #     windows, uidx = np.unique(windows, axis=0, return_index=True)
                 #     window_labels = np.array(window_labels)[uidx]
                 #     window_anomalies = np.array(window_anomalies)[uidx]
@@ -220,7 +221,7 @@ class FeatureExtractor(BaseEstimator):
                 session_dict[session_id]["window_labels"] = [data_dict["label"]]
                 window_count += 1
 
-        print("{} sliding windows generated.".format(window_count))
+        logging.info("{} sliding windows generated.".format(window_count))
 
     def __windows2quantitative(self, windows):
         total_features = []
@@ -252,20 +253,20 @@ class FeatureExtractor(BaseEstimator):
         return np.array(total_idx)
 
     def save(self):
-        print("Saving feature extractor to {}.".format(self.cache_dir))
+        logging.info("Saving feature extractor to {}.".format(self.cache_dir))
         with open(os.path.join(self.cache_dir, "est.pkl"), "wb") as fw:
             pickle.dump(self, fw)
 
     def load(self):
         try:
             save_file = os.path.join(self.cache_dir, "est.pkl")
-            print("Loading feature extractor from {}.".format(save_file))
+            logging.info("Loading feature extractor from {}.".format(save_file))
             with open(save_file, "rb") as fw:
                 obj = pickle.load(fw)
                 self.__dict__ = obj.__dict__
                 return True
         except Exception as e:
-            print("Cannot load cached feature extractor.")
+            logging.info("Cannot load cached feature extractor.")
             return False
 
     def fit(self, session_dict):
@@ -285,7 +286,7 @@ class FeatureExtractor(BaseEstimator):
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
 
-        print("{} tempaltes are found.".format(len(self.log2id_train)))
+        logging.info("{} tempaltes are found.".format(len(self.log2id_train)))
 
         if self.label_type == "next_log":
             self.meta_data["num_labels"] = len(self.log2id_train)
@@ -293,10 +294,10 @@ class FeatureExtractor(BaseEstimator):
             self.meta_data["num_labels"] = 2
 
         if self.feature_type == "semantics":
-            print("Using semantics.")
-            print("Building vocab.")
+            logging.info("Using semantics.")
+            logging.info("Building vocab.")
             self.vocab.build_vocab(self.ulog_train)
-            print("Building vocab done.")
+            logging.info("Building vocab done.")
             self.meta_data["vocab_size"] = self.vocab.token_vocab_size
 
             if self.pretrain_path is not None:
@@ -313,14 +314,14 @@ class FeatureExtractor(BaseEstimator):
             self.save()
 
     def transform(self, session_dict, datatype="train"):
-        print("Transforming {} data.".format(datatype))
+        logging.info("Transforming {} data.".format(datatype))
         if datatype == "test":
             # handle new logs
             ulog_test = set(
                 itertools.chain(*[v["templates"] for k, v in session_dict.items()])
             )
             ulog_new = ulog_test - self.ulog_train
-            print(f"{len(ulog_new)} new templates show while testing.")
+            logging.info(f"{len(ulog_new)} new templates show while testing.")
 
         if self.cache:
             cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
@@ -352,7 +353,7 @@ class FeatureExtractor(BaseEstimator):
 
             session_dict[session_id]["features"] = feature_dict
 
-        print("Finish feature extraction ({}).".format(datatype))
+        logging.info("Finish feature extraction ({}).".format(datatype))
         if self.cache:
             dump_pickle(session_dict, cached_file)
         return session_dict

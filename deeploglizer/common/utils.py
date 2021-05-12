@@ -7,6 +7,7 @@ import json
 import pickle
 import random
 import hashlib
+import logging
 
 
 def dump_params(params):
@@ -15,7 +16,20 @@ def dump_params(params):
     ).hexdigest()[0:8]
     save_dir = os.path.join("./experiment_records", hash_id)
     os.makedirs(save_dir, exist_ok=True)
+
     json_pretty_dump(params, os.path.join(save_dir, "params.json"))
+
+    log_file = os.path.join(save_dir, hash_id + ".log")
+    # logs will not show in the file without the two lines.
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s P%(process)d %(levelname)s %(message)s",
+        handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
+    )
+
     return save_dir, hash_id
 
 
@@ -54,34 +68,14 @@ def set_device(gpu=-1):
     return device
 
 
-# def dict2hdf5(filename, dic):
-#     with h5py.File(filename, 'w') as h5file:
-#         recursive_dict2hdf5(h5file, '/', dic)
-
-
-# def recursive_dict2hdf5(h5file, path, dic):
-#     for key, item in dic.items():
-#         if not isinstance(key, str):
-#             key = str(key)
-#         if isinstance(item, (np.ndarray, np.int64, np.float64, str, bytes)):
-#             h5file[path + key] = item
-#         elif isinstance(item, list):
-#             h5file[path + key] = np.array(item)
-#         elif isinstance(item, dict):
-#             recursive_dict2hdf5(h5file, path + key + '/',
-#                                 item)
-#         else:
-#             raise ValueError('Cannot save %s type' % type(item))
-
-
 def dump_pickle(obj, file_path):
-    print("Dumping to {}".format(file_path))
+    logging.info("Dumping to {}".format(file_path))
     with open(file_path, "wb") as fw:
         pickle.dump(obj, fw)
 
 
 def load_pickle(file_path):
-    print("Loading from {}".format(file_path))
+    logging.info("Loading from {}".format(file_path))
     with open(file_path, "rb") as fr:
         return pickle.load(fr)
 
