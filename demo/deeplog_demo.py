@@ -121,5 +121,11 @@ if __name__ == "__main__":
     )
 
     with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
-        info = "{} DeepLog {} {}\n".format(hash_id, args_str, result_str)
+        info = "{} DeepLog {} {} train: {:.3f} test: {:.3f}\n".format(
+            hash_id,
+            args_str,
+            result_str,
+            model.time_tracker["trian"],
+            model.time_tracker["test"],
+        )
         fw.write(info)

@@ -60,6 +60,7 @@ class ForcastBasedModel(nn.Module):
         self.feature_type = feature_type
         self.label_type = label_type
         self.eval_type = eval_type
+        self.time_tracker = {}
 
         os.makedirs(model_save_path, exist_ok=True)
         self.model_save_file = os.path.join(model_save_path, "model.ckpt")
@@ -98,6 +99,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
             logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            self.time_tracker["test"] = infer_end - infer_start
 
             store_df = pd.DataFrame(store_dict)
 
@@ -147,6 +149,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
             logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            self.time_tracker["test"] = infer_end - infer_start
 
             store_df = pd.DataFrame(store_dict)
             if self.eval_type == "session":
@@ -193,6 +196,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["y_prob_topk"].extend(y_pred.data.cpu().numpy())
             infer_end = time.time()
             logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            self.time_tracker["test"] = infer_end - infer_start
             store_df = pd.DataFrame(store_dict)
             best_result = None
             best_f1 = -float("inf")
@@ -267,6 +271,7 @@ class ForcastBasedModel(nn.Module):
         best_f1 = -float("inf")
         best_results = None
         for epoch in range(1, epoches + 1):
+            epoch_time_start = time.time()
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -290,5 +295,7 @@ class ForcastBasedModel(nn.Module):
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
                     self.save_model()
+            epoch_time_end = time.time()
+            self.time_tracker["train"] = epoch_time_end - epoch_time_start
         self.load_model(self.model_save_file)
         return best_results
