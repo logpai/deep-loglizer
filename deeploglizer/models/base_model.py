@@ -293,7 +293,6 @@ class ForcastBasedModel(nn.Module):
 
             if test_loader is not None and (epoch % 1 == 0):
                 logging.info("Evaluating test.")
-                eval_results = self.evaluate(train_loader)
                 eval_results = self.evaluate(test_loader)
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
