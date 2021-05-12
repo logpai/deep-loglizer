@@ -8,6 +8,7 @@ python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_
 python cnn_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 1 --label_type anomaly --gpu 3 B
 
 
+## try different ws
 python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 3 --label_type next_log --gpu 0 B
 
 python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 4 --label_type next_log --gpu 0 B

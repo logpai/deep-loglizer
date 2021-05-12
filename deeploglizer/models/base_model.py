@@ -288,6 +288,9 @@ class ForcastBasedModel(nn.Module):
             logging.info(
                 "Epoch {}/{}, training loss: {:.5f}".format(epoch, epoches, epoch_loss)
             )
+            epoch_time_end = time.time()
+            self.time_tracker["train"] = epoch_time_end - epoch_time_start
+
             if test_loader is not None and (epoch % 1 == 0):
                 logging.info("Evaluating test.")
                 eval_results = self.evaluate(test_loader)
@@ -295,7 +298,6 @@ class ForcastBasedModel(nn.Module):
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
                     self.save_model()
-            epoch_time_end = time.time()
-            self.time_tracker["train"] = epoch_time_end - epoch_time_start
+
         self.load_model(self.model_save_file)
         return best_results
