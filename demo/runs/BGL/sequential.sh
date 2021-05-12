@@ -6,3 +6,12 @@ python ae_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio
 # supervised
 python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 1 --label_type anomaly --gpu 3 B
 python cnn_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 1 --label_type anomaly --gpu 3 B
+
+
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 3 --label_type next_log --gpu 0 B
+
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 4 --label_type next_log --gpu 0 B
+
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 5 --label_type next_log --gpu 0 B
+
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 6 --label_type next_log --gpu 0 B
