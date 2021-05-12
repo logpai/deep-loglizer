@@ -35,7 +35,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### model params:
 parser.add_argument("--hidden_size", default=200, type=int)
-parser.add_argument("--num_directions", default=1, type=float)
+parser.add_argument("--num_directions", default=2, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
