@@ -5,14 +5,27 @@ from deeploglizer.models import ForcastBasedModel
 from IPython import embed
 
 
-class AE(ForcastBasedModel):
+# 1.
+# 32 x 1 (1,2,3,4,5,7,8)
+# after embedding: 32 x 16
+# lstm / avg  -> 1 x hidden [a]
+# encoder: mlp
+# internal
+# decoder: mlp
+# recst_vector [b]
+# recst loss: a <-> b?
+
+
+class AutoEncoder(ForcastBasedModel):
     def __init__(
         self,
         meta_data,
-        kernel_sizes=[2, 3, 4],
         hidden_size=100,
+        num_directions=2,
         embedding_dim=16,
         feature_type="sequentials",
+        label_type="none",
+        eval_type="session",
         topk=5,
         use_tfidf=False,
         pretrain_matrix=None,
@@ -22,6 +35,8 @@ class AE(ForcastBasedModel):
         super().__init__(
             meta_data=meta_data,
             feature_type=feature_type,
+            label_type=label_type,
+            eval_type=eval_type,
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
@@ -29,54 +44,48 @@ class AE(ForcastBasedModel):
             freeze=freeze,
             device=device,
         )
-        num_labels = meta_data["num_labels"]
         self.feature_type = feature_type
+        self.label_type = label_type
         self.hidden_size = hidden_size
+        self.num_directions = num_directions
         self.use_tfidf = use_tfidf
-
-        self.convs = nn.ModuleList(
-            [nn.Conv2d(1, hidden_size, (K, embedding_dim)) for K in kernel_sizes]
+        self.embedding_dim = embedding_dim
+        self.rnn = nn.LSTM(
+            input_size=embedding_dim,
+            hidden_size=self.hidden_size,
+            batch_first=True,
+            bidirectional=(self.num_directions == 2),
         )
 
-        self.criterion = nn.CrossEntropyLoss()
-        self.prediction_layer = nn.Linear(
-            self.hidden_size * len(kernel_sizes), num_labels
+        self.encoder = nn.Linear(
+            self.hidden_size * self.num_directions, self.hidden_size // 2
         )
 
-    # 1.
-    # 32 x 1 (1,2,3,4,5,7,8)
-    # after embedding: 32 x 16
-    # lstm / avg  -> 1 x hidden [a]
-    # encoder: mlp
-    # internal
-    # decoder: mlp
-    # recst_vector [b]
-    # recst loss: a <-> b?
-
-    # 2.
-    # 32 x 1 (1,2,3,4,5,7,8) -> window_count  -> 1 x unique_event
+        self.decoder = nn.Linear(
+            self.hidden_size // 2, self.hidden_size * self.num_directions
+        )
+        self.criterion = nn.MSELoss(reduction="none")
 
     def forward(self, input_dict):
-        y = input_dict["window_labels"].long().view(-1)
-        self.batch_size = y.size()[0]
         x = input_dict["features"]
-        x = self.embedder(x)
+        self.batch_size = x.size()[0]
+        if self.embedding_dim == 1:
+            x = x.unsqueeze(-1)
+        else:
+            x = self.embedder(x)
 
         if self.feature_type == "semantics":
             if not self.use_tfidf:
                 x = x.sum(dim=-2)  # add tf-idf
 
-        x = x.unsqueeze(1)
+        outputs, hidden = self.rnn(x.float())
+        # representation = outputs.mean(dim=1)
+        representation = outputs[:, -1, :]
 
-        x = [
-            F.relu(conv(x)).squeeze(3) for conv in self.convs
-        ]  # [(batch_size, hidden_size, seq_len), ...]*len(kernel_sizes)
-        x = [
-            F.max_pool1d(i, i.size(2)).squeeze(2) for i in x
-        ]  # [(batch_size, hidden_size), ...] * len(kernel_sizes)
-        representation = torch.cat(x, 1)
-        logits = self.prediction_layer(representation)
-        y_pred = logits.softmax(dim=-1)
-        loss = self.criterion(logits, y)
-        return_dict = {"loss": loss, "y_pred": y_pred}
+        x_internal = self.encoder(representation)
+        x_recst = self.decoder(x_internal)
+
+        pred = self.criterion(x_recst, representation).mean(dim=-1)
+        loss = pred.mean()
+        return_dict = {"loss": loss, "y_pred": pred}
         return return_dict

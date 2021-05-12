@@ -1,6 +1,8 @@
+import os
 import time
 import torch
 import pandas as pd
+import numpy as np
 from collections import defaultdict
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
@@ -39,6 +41,7 @@ class ForcastBasedModel(nn.Module):
     def __init__(
         self,
         meta_data,
+        model_save_path,
         feature_type,
         label_type,
         eval_type,
@@ -57,6 +60,8 @@ class ForcastBasedModel(nn.Module):
         self.label_type = label_type
         self.eval_type = eval_type
 
+        os.makedirs(model_save_path, exist_ok=True)
+        self.model_save_file = os.path.join(model_save_path, "model.ckpt")
         if feature_type in ["semantics", "sequentials"]:
             self.embedder = Embedder(
                 meta_data["vocab_size"],
@@ -68,11 +73,60 @@ class ForcastBasedModel(nn.Module):
 
     def evaluate(self, test_loader, dtype="test"):
         if self.label_type == "next_log":
-            return self.evaluate_next_log(test_loader, dtype="test")
+            return self.__evaluate_next_log(test_loader, dtype="test")
         elif self.label_type == "anomaly":
-            return self.evaluate_anomaly(test_loader, dtype="test")
+            return self.__evaluate_anomaly(test_loader, dtype="test")
+        elif self.label_type == "none":
+            return self.__evaluate_recst(test_loader, dtype="test")
 
-    def evaluate_anomaly(self, test_loader, dtype="test"):
+    def __evaluate_recst(self, test_loader, dtype="test"):
+        self.eval()  # set to evaluation mode
+        with torch.no_grad():
+            y_pred = []
+            store_dict = defaultdict(list)
+            infer_start = time.time()
+            for batch_input in test_loader:
+                return_dict = self.forward(self.__input2device(batch_input))
+                y_pred = return_dict["y_pred"]
+                store_dict["session_idx"].extend(
+                    tensor2flatten_arr(batch_input["session_idx"])
+                )
+                store_dict["window_anomalies"].extend(
+                    tensor2flatten_arr(batch_input["window_anomalies"])
+                )
+                store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
+            infer_end = time.time()
+            print("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+
+            store_df = pd.DataFrame(store_dict)
+
+            if self.eval_type == "session":
+                use_cols = ["session_idx", "window_anomalies", "window_preds"]
+                session_df = (
+                    store_df[use_cols]
+                    .groupby("session_idx", as_index=False)
+                    .max()  # most anomalous window
+                )
+            else:
+                session_df = store_df
+
+            anomaly_ratio = 0.05
+            thre = np.percentile(
+                session_df[f"window_preds"].values, 100 - anomaly_ratio * 100
+            )
+            pred = (session_df[f"window_preds"] > thre).astype(int)
+            y = (session_df["window_anomalies"] > 0).astype(int)
+
+            eval_results = {
+                "f1": f1_score(y, pred),
+                "rc": recall_score(y, pred),
+                "pc": precision_score(y, pred),
+                "acc": accuracy_score(y, pred),
+            }
+            print(eval_results)
+            return eval_results
+
+    def __evaluate_anomaly(self, test_loader, dtype="test"):
 
         self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -113,7 +167,7 @@ class ForcastBasedModel(nn.Module):
             print(eval_results)
             return eval_results
 
-    def evaluate_next_log(self, test_loader, dtype="test"):
+    def __evaluate_next_log(self, test_loader, dtype="test"):
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -187,6 +241,21 @@ class ForcastBasedModel(nn.Module):
     def __input2device(self, batch_input):
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
+    def save_model(self):
+        print("Saving model to {}".format(self.model_save_file))
+        try:
+            torch.save(
+                self.state_dict(),
+                self.model_save_file,
+                _use_new_zipfile_serialization=False,
+            )
+        except:
+            torch.save(self.state_dict(), self.model_save_file)
+
+    def load_model(self, model_save_file=""):
+        print("Loading model from {}".format(self.model_save_file))
+        self.load_state_dict(torch.load(model_save_file, map_location=self.device))
+
     def fit(self, train_loader, test_loader=None, epoches=10, learning_rate=1.0e-3):
         self.to(self.device)
         print(
@@ -219,4 +288,6 @@ class ForcastBasedModel(nn.Module):
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
+                    self.save_model()
+        self.load_model(self.model_save_file)
         return best_results

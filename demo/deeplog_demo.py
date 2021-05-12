@@ -12,7 +12,7 @@ from deeploglizer.common.dataloader import (
     log_dataset,
 )
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.utils import seed_everything, set_device
+from deeploglizer.common.utils import seed_everything, set_device, dump_params
 from torch.utils.data import DataLoader
 
 from IPython import embed
@@ -20,132 +20,96 @@ from IPython import embed
 # python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--test_ratio", default=0.2, type=float, help="test_ratio")
+parser.add_argument("--test_ratio", default=0.2, type=float)
+parser.add_argument("--train_anomaly_ratio", default=1, type=float)
 parser.add_argument(
-    "--train_anomaly_ratio", default=1, type=float, help="train_anomaly_ratio"
-)
-parser.add_argument(
-    "--feature_type", default="sequentials", type=str, help="feature_type"
+    "--feature_type", default="sequentials", type=str
 )  # "sequentials", "semantics", "quantitatives"
-parser.add_argument("--dataset", default="BGL", type=str, help="dataset")
-parser.add_argument("--label_type", default="anomaly", type=str, help="label_type")
-parser.add_argument("--gpu", default=0, type=int, help="gpu id")
-args = vars(parser.parse_args())
+parser.add_argument("--dataset", default="HDFS", type=str)
+parser.add_argument("--label_type", default="anomaly", type=str)
+parser.add_argument("--gpu", default=0, type=int)
+parser.add_argument("--random_seed", default=42, type=int)
+parser.add_argument("--window_size", default=10, type=int)
+parser.add_argument("--stride", default=1, type=int)
+parser.add_argument("--topk", default=8, type=int)
+parser.add_argument("--batch_size", default=1024, type=int)
+parser.add_argument("--epoches", default=5, type=int)
+parser.add_argument("--learning_rate", default=0.01, type=float)
+parser.add_argument("--use_attention", default=False, type=bool)
+parser.add_argument("--use_tfidf", default=False, type=bool)
+parser.add_argument("--sequential_partition", default=False, type=bool)
+parser.add_argument("--hidden_size", default=200, type=int)
+parser.add_argument("--num_directions", default=1, type=float)
+parser.add_argument("--embedding_dim", default=8, type=int)
+parser.add_argument("--max_token_len", default=50, type=int)
+parser.add_argument("--min_token_count", default=1, type=int)
+parser.add_argument(
+    "--pretrain_path", default=None, type=str
+)  # "../data/pretrain/wiki-news-300d-1M.vec"
+parser.add_argument("--cache", default=False, type=bool)
+params = vars(parser.parse_args())
 
-
-test_ratio = args["test_ratio"]
-train_anomaly_ratio = args["train_anomaly_ratio"]
-device = args["gpu"]
-feature_type = args["feature_type"]
-dataset = args["dataset"]
-label_type = args["label_type"]
-
-
-random_seed = 42
-eval_type = "window" if dataset == "BGL" else "session"
-window_size = 10
-stride = 1
-
-topk = 8
-batch_size = 1024
-epoches = 5
-learning_rate = 1.0e-2
-use_tfidf = False
-sequential_partition = True
-
-hidden_size = 200
-num_directions = 1
-embedding_dim = 8
-
-max_token_len = 50  # max #token for each event [semantic only]
-min_token_count = 1  # min # occurrence of token for each event [semantic only]
-pretrain_path = None
-# pretrain_path = "../data/pretrain/wiki-news-300d-1M.vec"
-
-deduplicate_windows = False
-cache = False
-
-if dataset == "HDFS":
+if params["dataset"] == "HDFS":
     log_file = "../data/HDFS/HDFS.log_groundtruth.csv"
     if not os.path.isfile(log_file):
         log_file = "../data/HDFS/HDFS_100k.log_structured.csv"
     label_file = "../data/HDFS/anomaly_label.csv"
-elif dataset == "BGL":
+    params["log_file"] = log_file
+    params["label_file"] = label_file
+elif params["dataset"] == "BGL":
     log_file = "../data/BGL/BGL.log_groundtruth.csv"
     if not os.path.isfile(log_file):
         log_file = "../data/BGL/BGL_100k.log_structured.csv"
+    params["log_file"] = log_file
 
+model_save_path, hash_id = dump_params(params)
+eval_type = "window" if params["dataset"] == "BGL" else "session"
 if __name__ == "__main__":
-    seed_everything(random_seed)
+    seed_everything(params["random_seed"])
 
-    if dataset == "HDFS":
-        session_train, session_test = load_HDFS(
-            log_file=log_file,
-            label_file=label_file,
-            test_ratio=test_ratio,
-            train_anomaly_ratio=train_anomaly_ratio,
-            sequential_partition=sequential_partition,
-            random_seed=random_seed,
-        )
-    elif dataset == "BGL":
-        session_train, session_test = load_BGL(
-            log_file=log_file,
-            test_ratio=test_ratio,
-            train_anomaly_ratio=train_anomaly_ratio,
-            sequential_partition=True,
-            random_seed=random_seed,
-        )
+    if params["dataset"] == "HDFS":
+        session_train, session_test = load_HDFS(**params)
+    elif params["dataset"] == "BGL":
+        session_train, session_test = load_BGL(**params)
 
-    ext = FeatureExtractor(
-        label_type=label_type,  # "none", "next_log", "anomaly"
-        feature_type=feature_type,  # "sequentials", "semantics", "quantitatives"
-        window_type="sliding",
-        window_size=window_size,
-        stride=stride,
-        max_token_len=max_token_len,
-        min_token_count=min_token_count,
-        pretrain_path=pretrain_path,
-        use_tfidf=use_tfidf,
-        deduplicate_windows=deduplicate_windows,
-        cache=cache,
-    )
+    ext = FeatureExtractor(**params)
 
     session_train = ext.fit_transform(session_train)
     session_test = ext.transform(session_test, datatype="test")
 
-    dataset_train = log_dataset(session_train, feature_type=feature_type)
+    dataset_train = log_dataset(session_train, feature_type=params["feature_type"])
     dataloader_train = DataLoader(
-        dataset_train, batch_size=batch_size, shuffle=True, pin_memory=True
+        dataset_train, batch_size=params["batch_size"], shuffle=True, pin_memory=True
     )
 
-    dataset_test = log_dataset(session_test, feature_type=feature_type)
+    dataset_test = log_dataset(session_test, feature_type=params["feature_type"])
     dataloader_test = DataLoader(
         dataset_test, batch_size=4096, shuffle=False, pin_memory=True
     )
 
-    model = LSTM(
-        meta_data=ext.meta_data,
-        hidden_size=hidden_size,
-        num_directions=num_directions,
-        embedding_dim=embedding_dim,
-        feature_type=feature_type,
-        label_type=label_type,
-        eval_type=eval_type,
-        use_tfidf=use_tfidf,
-        topk=topk,
-        device=device,
-    )
+    model = LSTM(meta_data=ext.meta_data, model_save_path=model_save_path, **params)
 
     eval_results = model.fit(
         dataloader_train,
         test_loader=dataloader_test,
-        epoches=epoches,
-        learning_rate=learning_rate,
+        epoches=params["epoches"],
+        learning_rate=params["learning_rate"],
     )
 
     result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
-    args_str = "\t".join(["{}:{}".format(k, v) for k, v in args.items()])
-    os.makedirs("./demo_results/", exist_ok=True)
-    with open(os.path.join("./demo_results/", f"{dataset}_deeplog.txt"), "a+") as fw:
-        info = "{} {}\n".format(args_str, result_str)
+
+    key_info = [
+        "dataset",
+        "train_anomaly_ratio",
+        "feature_type",
+        "label_type",
+        "use_attention",
+    ]
+
+    args_str = "\t".join(
+        ["{}:{}".format(k, v) for k, v in params.items() if k in key_info]
+    )
+
+    with open(os.path.join(f"{params['dataset']}_deeplog.txt"), "a+") as fw:
+        info = "{} {} {}\n".format(hash_id, args_str, result_str)
         fw.write(info)

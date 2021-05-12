@@ -6,9 +6,22 @@ import h5py
 import json
 import pickle
 import random
+import hashlib
+
+
+def dump_params(params):
+    hash_id = hashlib.md5(
+        str(sorted([(k, v) for k, v in params.items()])).encode("utf-8")
+    ).hexdigest()[0:8]
+    save_dir = os.path.join("./experiment_records", hash_id)
+    os.makedirs(save_dir, exist_ok=True)
+    json_pretty_dump(params, os.path.join(save_dir, "params.json"))
+    return save_dir, hash_id
+
 
 def decision(probability):
     return random.random() < probability
+
 
 def json_pretty_dump(obj, filename):
     with open(filename, "w") as fw:

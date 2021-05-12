@@ -14,6 +14,8 @@ class Transformer(ForcastBasedModel):
         hidden_size=100,
         num_layers=1,
         feature_type="sequentials",
+        label_type="next_log",
+        eval_type="session",
         topk=5,
         use_tfidf=False,
         pretrain_matrix=None,
@@ -23,6 +25,8 @@ class Transformer(ForcastBasedModel):
         super().__init__(
             meta_data=meta_data,
             feature_type=feature_type,
+            label_type=label_type,
+            eval_type=eval_type,
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
@@ -45,7 +49,10 @@ class Transformer(ForcastBasedModel):
         self.prediction_layer = nn.Linear(embedding_dim, num_labels)
 
     def forward(self, input_dict):
-        y = input_dict["window_labels"].long().view(-1)
+        if self.label_type == "anomaly":
+            y = input_dict["window_anomalies"].long().view(-1)
+        elif self.label_type == "next_log":
+            y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
         x = input_dict["features"]
         x = self.embedder(x)

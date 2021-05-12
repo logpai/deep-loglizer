@@ -51,10 +51,12 @@ def load_BGL(
     train_anomaly_ratio=0,
     sequential_partition=False,
     random_seed=42,
+    **kwargs
 ):
     print("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     struct_log.sort_values(by=["Timestamp"], inplace=True)
+    print("{} lines loaded.".format(struct_log.shape[0]))
 
     templates = struct_log["EventTemplate"].values
     labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
@@ -70,10 +72,7 @@ def load_BGL(
     idx_train = [
         idx
         for idx in idx_train
-        if (
-            labels_train[idx] == 0
-            or (labels_train[idx] == 1 and decision(train_anomaly_ratio))
-        )
+        if (labels[idx] == 0 or (labels[idx] == 1 and decision(train_anomaly_ratio)))
     ]
 
     session_train = {
@@ -83,7 +82,7 @@ def load_BGL(
         "all": {"templates": templates[idx_test].tolist(), "label": labels[idx_test]}
     }
 
-    labels_train = labels_train[idx_train]
+    labels_train = labels[idx_train]
 
     train_anomaly = 100 * sum(labels_train) / len(labels_train)
     test_anomaly = 100 * sum(labels_test) / len(labels_test)
@@ -102,6 +101,7 @@ def load_HDFS(
     first_n_rows=None,
     sequential_partition=False,
     random_seed=42,
+    **kwargs
 ):
     """Load HDFS structured log into train and test data
 

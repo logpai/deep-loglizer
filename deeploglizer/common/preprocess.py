@@ -139,8 +139,8 @@ class FeatureExtractor(BaseEstimator):
         min_token_count=1,
         pretrain_path=None,
         use_tfidf=False,
-        deduplicate_windows=True,
         cache=False,
+        **kwargs,
     ):
         self.label_type = label_type
         self.feature_type = feature_type
@@ -152,7 +152,6 @@ class FeatureExtractor(BaseEstimator):
         self.use_tfidf = use_tfidf
         self.max_token_len = max_token_len
         self.min_token_count = min_token_count
-        self.deduplicate_windows = deduplicate_windows
         self.cache = cache
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
@@ -205,11 +204,11 @@ class FeatureExtractor(BaseEstimator):
                     window_labels.append(next_log)
                     window_anomalies.append(window_anomaly)
 
-                if self.deduplicate_windows:
-                    print("Deduplicating windows...")
-                    windows, uidx = np.unique(windows, axis=0, return_index=True)
-                    window_labels = np.array(window_labels)[uidx]
-                    window_anomalies = np.array(window_anomalies)[uidx]
+                # if self.deduplicate_windows:
+                #     print("Deduplicating windows...")
+                #     windows, uidx = np.unique(windows, axis=0, return_index=True)
+                #     window_labels = np.array(window_labels)[uidx]
+                #     window_anomalies = np.array(window_anomalies)[uidx]
                 window_count += len(windows)
 
                 session_dict[session_id]["windows"] = windows

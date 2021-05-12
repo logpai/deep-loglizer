@@ -13,6 +13,8 @@ class CNN(ForcastBasedModel):
         hidden_size=100,
         embedding_dim=16,
         feature_type="sequentials",
+        label_type="next_log",
+        eval_type="session",
         topk=5,
         use_tfidf=False,
         pretrain_matrix=None,
@@ -22,6 +24,8 @@ class CNN(ForcastBasedModel):
         super().__init__(
             meta_data=meta_data,
             feature_type=feature_type,
+            label_type=label_type,
+            eval_type=eval_type,
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
@@ -44,7 +48,10 @@ class CNN(ForcastBasedModel):
         )
 
     def forward(self, input_dict):
-        y = input_dict["window_labels"].long().view(-1)
+        if self.label_type == "anomaly":
+            y = input_dict["window_anomalies"].long().view(-1)
+        elif self.label_type == "next_log":
+            y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
         x = input_dict["features"]
         x = self.embedder(x)
