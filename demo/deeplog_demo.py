@@ -38,10 +38,10 @@ train_anomaly_ratio = args["train_anomaly_ratio"]
 device = args["gpu"]
 feature_type = args["feature_type"]
 dataset = args["dataset"]
+label_type = args["label_type"]
 
 
 random_seed = 42
-label_type = "anomaly"
 eval_type = "window" if dataset == "BGL" else "session"
 window_size = 10
 stride = 1
