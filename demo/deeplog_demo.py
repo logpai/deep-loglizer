@@ -21,36 +21,42 @@ from IPython import embed
 
 parser = argparse.ArgumentParser()
 
-# fixed for log anomaly
-parser.add_argument(
-    "--feature_type", default="sequentials", type=str
-)  # "sequentials", "semantics", "quantitatives"
+##################### fixed for Deeplog ↓ ####################
+parser.add_argument("--feature_type", default="sequentials", type=str)
 parser.add_argument("--use_attention", default=False, type=bool)
 parser.add_argument("--label_type", default="next_log", type=str)
 parser.add_argument("--use_tfidf", default=False, type=bool)
-parser.add_argument(
-    "--pretrain_path", default=None, type=str
-)  # "../data/pretrain/wiki-news-300d-1M.vec"
+parser.add_argument("--pretrain_path", default=None, type=str)
+##################### fixed for Deeplog ↑ ####################
 
+##### for semantics:
+parser.add_argument("--max_token_len", default=50, type=int)
+parser.add_argument("--min_token_count", default=1, type=int)
 
-parser.add_argument("--test_ratio", default=0.2, type=float)
-parser.add_argument("--train_anomaly_ratio", default=1, type=float)
-parser.add_argument("--dataset", default="HDFS", type=str)
-parser.add_argument("--gpu", default=0, type=int)
-parser.add_argument("--random_seed", default=42, type=int)
-parser.add_argument("--window_size", default=10, type=int)
-parser.add_argument("--stride", default=1, type=int)
-parser.add_argument("--topk", default=8, type=int)
-parser.add_argument("--batch_size", default=1024, type=int)
-parser.add_argument("--epoches", default=5, type=int)
-parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--sequential_partition", default=False, type=bool)
+##### model params:
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_directions", default=1, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
-parser.add_argument("--max_token_len", default=50, type=int)
-parser.add_argument("--min_token_count", default=1, type=int)
+
+##### dataset params
+parser.add_argument("--dataset", default="HDFS", type=str)
+parser.add_argument("--sequential_partition", default=False, type=bool)
+parser.add_argument("--test_ratio", default=0.2, type=float)
+parser.add_argument("--train_anomaly_ratio", default=1, type=float)
+parser.add_argument("--window_size", default=10, type=int)
+parser.add_argument("--stride", default=1, type=int)
+
+##### training params
+parser.add_argument("--epoches", default=5, type=int)
+parser.add_argument("--learning_rate", default=0.01, type=float)
+parser.add_argument("--batch_size", default=1024, type=int)
+parser.add_argument("--topk", default=8, type=int)
+
+##### Others
+parser.add_argument("--random_seed", default=42, type=int)
+parser.add_argument("--gpu", default=0, type=int)
 parser.add_argument("--cache", default=False, type=bool)
+
 params = vars(parser.parse_args())
 
 if params["dataset"] == "HDFS":

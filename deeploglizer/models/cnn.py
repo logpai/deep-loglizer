@@ -41,6 +41,8 @@ class CNN(ForcastBasedModel):
         self.hidden_size = hidden_size
         self.use_tfidf = use_tfidf
 
+        if isinstance(kernel_sizes, str):
+            kernel_sizes = list(map(int, kernel_sizes.split()))
         self.convs = nn.ModuleList(
             [nn.Conv2d(1, hidden_size, (K, embedding_dim)) for K in kernel_sizes]
         )
