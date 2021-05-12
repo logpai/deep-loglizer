@@ -9,10 +9,4 @@ python cnn_demo.py --dataset BGL --feature_type sequentials --train_anomaly_rati
 
 
 ## try different ws
-python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 3 --label_type next_log --gpu 0 B
-
-python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 4 --label_type next_log --gpu 0 B
-
-python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 5 --label_type next_log --gpu 0 B
-
-python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 6 --label_type next_log --gpu 0 B
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 10 --label_type next_log --gpu 0 B
