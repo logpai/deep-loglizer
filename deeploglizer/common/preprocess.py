@@ -217,8 +217,9 @@ class FeatureExtractor(BaseEstimator):
 
                 if session_id == "all":
                     logging.info(
-                        "Window anomaly ratio:{:.2f}".format(
-                            sum(window_anomalies) / len(window_anomalies)
+                        "Window anomaly number {} ({:.2f})".format(
+                            len(window_anomalies),
+                            sum(window_anomalies) / len(window_anomalies),
                         )
                     )
 

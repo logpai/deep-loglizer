@@ -1,6 +1,8 @@
 # unsupervised
 python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 B
 python transformer_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log  --gpu 1 B 
+
+
 python ae_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --gpu 2 B 
 
 # supervised
@@ -9,4 +11,4 @@ python cnn_demo.py --dataset BGL --feature_type sequentials --train_anomaly_rati
 
 
 ## try different ws
-python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 10 --label_type next_log --gpu 0 B
+python deeplog_demo.py --dataset BGL --feature_type sequentials --train_anomaly_ratio 0 --window_size 10 --label_type next_log --gpu 0 
