@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser()
 ##### features:
 # "sequentials", "semantics", "quantitatives"
 parser.add_argument("--feature_type", default="sequentials", type=str)
-parser.add_argument("--label_type", default="next_log", type=str)
+parser.add_argument("--label_type", default="anomaly", type=str)
 
 ##### for semantics:
 parser.add_argument("--use_tfidf", default=False, type=bool)
