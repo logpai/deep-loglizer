@@ -42,9 +42,10 @@ parser.add_argument("--embedding_dim", default=8, type=int)
 parser.add_argument("--dataset", default="BGL", type=str)
 parser.add_argument("--train_anomaly_ratio", default=0, type=float)
 parser.add_argument("--random_partition", action="store_true")
+parser.add_argument("--train_ratio", default=None, type=float)
 parser.add_argument("--test_ratio", default=0.2, type=float)
-parser.add_argument("--window_size", default=10, type=int)
-parser.add_argument("--stride", default=1, type=int)
+parser.add_argument("--window_size", default=5, type=int)
+parser.add_argument("--stride", default=5, type=int)
 
 ##### training params
 parser.add_argument("--epoches", default=5, type=int)

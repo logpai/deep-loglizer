@@ -56,7 +56,7 @@ def load_BGL(
 ):
     logging.info("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
-    struct_log.sort_values(by=["Timestamp"], inplace=True)
+    # struct_log.sort_values(by=["Timestamp"], inplace=True)
     logging.info("{} lines loaded.".format(struct_log.shape[0]))
 
     templates = struct_log["EventTemplate"].values
@@ -100,6 +100,7 @@ def load_BGL(
 def load_HDFS(
     log_file,
     label_file,
+    train_ratio=None,
     test_ratio=None,
     train_anomaly_ratio=1,
     first_n_rows=None,
@@ -119,7 +120,7 @@ def load_HDFS(
     """
     logging.info("Loading HDFS logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
-    struct_log.sort_values(by=["Date", "Time"], inplace=True)
+    # struct_log.sort_values(by=["Date", "Time"], inplace=True)
 
     # assign labels
     label_data = pd.read_csv(label_file, engine="c", na_filter=False, memory_map=True)
@@ -141,25 +142,28 @@ def load_HDFS(
 
         for k in session_dict.keys():
             session_dict[k]["label"] = label_data_dict[k]
-        # split data
-        session_ids = list(session_dict.keys())
-        session_labels = list(map(lambda x: label_data_dict[x], session_ids))
 
+        session_idx = list(range(len(session_dict)))
+        # split data
         if random_partition:
             logging.info("Using random partition.")
+            np.random.shuffle(session_idx)
 
-        (
-            session_id_train,
-            session_id_test,
-            session_labels_train,
-            session_labels_test,
-        ) = train_test_split(
-            session_ids,
-            session_labels,
-            test_size=test_ratio,
-            shuffle=random_partition,
-            random_state=random_seed,
-        )
+        session_ids = np.array(list(session_dict.keys()))
+        session_labels = np.array(list(map(lambda x: label_data_dict[x], session_ids)))
+
+        if train_ratio is None:
+            train_ratio = 1 - test_ratio
+        train_lines = int(train_ratio * len(session_idx))
+        test_lines = int(test_ratio * len(session_idx))
+
+        session_idx_train = session_idx[0:train_lines]
+        session_idx_test = session_idx[-test_lines:]
+
+        session_id_train = session_ids[session_idx_train]
+        session_id_test = session_ids[session_idx_test]
+        session_labels_train = session_labels[session_idx_train]
+        session_labels_test = session_labels[session_idx_test]
 
         logging.info("Total # sessions: {}".format(len(session_ids)))
 
