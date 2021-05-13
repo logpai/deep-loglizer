@@ -188,7 +188,6 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_anomalies"].extend(
                     tensor2flatten_arr(batch_input["window_anomalies"])
                 )
-                embed()
                 store_dict["window_labels"].extend(
                     tensor2flatten_arr(batch_input["window_labels"])
                 )

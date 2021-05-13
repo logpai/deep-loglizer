@@ -19,8 +19,8 @@ python cnn_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_rat
 
 
 python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 32 B
-python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 100 B
-python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 200 B
-python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 300 B
-python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 400 B
-python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 0 --embedding_dim 8 --hidden_size 500 B
+python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 1 --embedding_dim 8 --hidden_size 100 B
+python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 2 --embedding_dim 8 --hidden_size 200 B
+python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 3 --embedding_dim 8 --hidden_size 300 B
+python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 2 --embedding_dim 8 --hidden_size 400 B
+python deeplog_demo.py --dataset HDFS --feature_type sequentials --train_anomaly_ratio 0 --label_type next_log --gpu 1 --embedding_dim 8 --hidden_size 500 B
