@@ -181,7 +181,7 @@ class FeatureExtractor(BaseEstimator):
 
                     if session_id == "all":
                         window_anomaly = int(
-                            1 in data_dict["label"][i : i + self.window_size]
+                            1 in data_dict["label"][i : i + self.window_size + 1]
                         )
                     else:
                         window_anomaly = data_dict["label"]
@@ -196,7 +196,7 @@ class FeatureExtractor(BaseEstimator):
                     next_log = self.log2id_train.get(templates[-1], 1)
 
                     if session_id == "all":
-                        window_anomaly = int(1 in data_dict["label"][i:-1])
+                        window_anomaly = int(1 in data_dict["label"][i:])
                     else:
                         window_anomaly = data_dict["label"]
 
