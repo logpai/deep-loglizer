@@ -113,7 +113,7 @@ class ForcastBasedModel(nn.Module):
             else:
                 session_df = store_df
 
-            anomaly_ratio = 0.05
+            anomaly_ratio = 0.0146
             thre = np.percentile(
                 session_df[f"window_preds"].values, 100 - anomaly_ratio * 100
             )
@@ -188,6 +188,7 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_anomalies"].extend(
                     tensor2flatten_arr(batch_input["window_anomalies"])
                 )
+                embed()
                 store_dict["window_labels"].extend(
                     tensor2flatten_arr(batch_input["window_labels"])
                 )

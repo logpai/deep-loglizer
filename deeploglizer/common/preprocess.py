@@ -211,6 +211,7 @@ class FeatureExtractor(BaseEstimator):
                 #     window_anomalies = np.array(window_anomalies)[uidx]
                 window_count += len(windows)
 
+                
                 session_dict[session_id]["windows"] = windows
                 session_dict[session_id]["window_labels"] = window_labels
                 session_dict[session_id]["window_anomalies"] = window_anomalies

@@ -62,16 +62,14 @@ def load_BGL(
     templates = struct_log["EventTemplate"].values
     labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
 
-    shuffle = random_partition == True
-
-    if shuffle:
+    if random_partition:
         logging.info("Using random partition.")
 
     idx_train, idx_test, labels_train, labels_test = train_test_split(
         list(range(templates.shape[0])),
         labels,
         test_size=test_ratio,
-        shuffle=(random_partition == True),
+        shuffle=random_partition,
         random_state=random_seed,
     )
 
@@ -147,9 +145,7 @@ def load_HDFS(
         session_ids = list(session_dict.keys())
         session_labels = list(map(lambda x: label_data_dict[x], session_ids))
 
-        shuffle = random_partition == True
-
-        if shuffle:
+        if random_partition:
             logging.info("Using random partition.")
 
         (
@@ -161,7 +157,7 @@ def load_HDFS(
             session_ids,
             session_labels,
             test_size=test_ratio,
-            shuffle=(random_partition == True),
+            shuffle=random_partition,
             random_state=random_seed,
         )
 
