@@ -48,6 +48,7 @@ class log_dataset(Dataset):
 
 def load_BGL(
     log_file,
+    train_ratio=None,
     test_ratio=0.8,
     train_anomaly_ratio=0,
     random_partition=False,
@@ -62,16 +63,18 @@ def load_BGL(
     templates = struct_log["EventTemplate"].values
     labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
 
+    total_indice = np.array(list(range(templates.shape[0])))
     if random_partition:
         logging.info("Using random partition.")
+        np.random.shuffle(total_indice)
 
-    idx_train, idx_test, labels_train, labels_test = train_test_split(
-        list(range(templates.shape[0])),
-        labels,
-        test_size=test_ratio,
-        shuffle=random_partition,
-        random_state=random_seed,
-    )
+    if train_ratio is None:
+        train_ratio = 1 - test_ratio
+    train_lines = int(train_ratio * len(total_indice))
+    test_lines = int(test_ratio * len(total_indice))
+
+    idx_train = total_indice[0:train_lines]
+    idx_test = total_indice[-test_lines:]
 
     idx_train = [
         idx
@@ -87,6 +90,7 @@ def load_BGL(
     }
 
     labels_train = labels[idx_train]
+    labels_test = labels[idx_test]
 
     train_anomaly = 100 * sum(labels_train) / len(labels_train)
     test_anomaly = 100 * sum(labels_test) / len(labels_test)

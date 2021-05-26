@@ -24,7 +24,7 @@ class Embedder(nn.Module):
         self.use_tfidf = use_tfidf
         if pretrain_matrix:
             self.embedding_layer = nn.Embedding.from_pretrained(
-                weight, padding_idx=1, freeze=freeze
+                pretrain_matrix, padding_idx=1, freeze=freeze
             )
         else:
             self.embedding_layer = nn.Embedding(
