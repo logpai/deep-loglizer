@@ -49,7 +49,7 @@ parser.add_argument("--stride", default=2, type=int)
 
 ##### training params
 parser.add_argument("--epoches", default=5, type=int)
-parser.add_argument("--learning_rate", default=0.01, type=float)
+parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--topk", default=10, type=int)
 
