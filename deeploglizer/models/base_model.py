@@ -75,11 +75,11 @@ class ForcastBasedModel(nn.Module):
 
     def evaluate(self, test_loader, dtype="test"):
         if self.label_type == "next_log":
-            return self.__evaluate_next_log(test_loader, dtype="test")
+            return self.__evaluate_next_log(test_loader, dtype=dtype)
         elif self.label_type == "anomaly":
-            return self.__evaluate_anomaly(test_loader, dtype="test")
+            return self.__evaluate_anomaly(test_loader, dtype=dtype)
         elif self.label_type == "none":
-            return self.__evaluate_recst(test_loader, dtype="test")
+            return self.__evaluate_recst(test_loader, dtype=dtype)
 
     def __evaluate_recst(self, test_loader, dtype="test"):
         self.eval()  # set to evaluation mode
@@ -193,7 +193,7 @@ class ForcastBasedModel(nn.Module):
                 )
                 store_dict["x"].extend(batch_input["features"].data.cpu().numpy())
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
-                store_dict["y_prob_topk"].extend(y_pred.data.cpu().numpy())
+                store_dict["y_prob_topk"].extend(y_prob_topk.data.cpu().numpy())
             infer_end = time.time()
             logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
@@ -201,23 +201,25 @@ class ForcastBasedModel(nn.Module):
             best_result = None
             best_f1 = -float("inf")
 
+            # embed()
             count_start = time.time()
 
             topk_res = defaultdict(list)
             window_labels = store_df["window_labels"].values
             y_pred_topk = store_df["y_pred_topk"].values
             for i in range(window_labels.shape[0]):
-                for topk in range(self.topk):
+                for topk in range(1, self.topk + 1):
                     candidates = y_pred_topk[i][:topk]
                     window_anomaly = int(window_labels[i] not in candidates)
                     topk_res[f"window_pred_anomaly_{topk}"].append(window_anomaly)
             topk_res = pd.DataFrame(topk_res)
 
             store_df = pd.concat([store_df, topk_res], axis=1)
+            store_df.to_csv("store_{}.csv".format(dtype), index=False)
 
             if self.eval_type == "session":
                 use_cols = ["session_idx", "window_anomalies"] + [
-                    f"window_pred_anomaly_{topk}" for topk in range(self.topk)
+                    f"window_pred_anomaly_{topk}" for topk in range(1, self.topk + 1)
                 ]
                 session_df = (
                     store_df[use_cols].groupby("session_idx", as_index=False).sum()
@@ -225,7 +227,7 @@ class ForcastBasedModel(nn.Module):
             else:
                 session_df = store_df
 
-            for topk in range(self.topk):
+            for topk in range(1, self.topk + 1):
                 pred = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int)
                 y = (session_df["window_anomalies"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomalies"].sum() / len(store_df)
@@ -293,6 +295,7 @@ class ForcastBasedModel(nn.Module):
 
             if test_loader is not None and (epoch % 1 == 0):
                 logging.info("Evaluating test.")
+                self.evaluate(train_loader, "train")
                 eval_results = self.evaluate(test_loader)
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]

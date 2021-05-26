@@ -112,8 +112,8 @@ class LSTM(ForcastBasedModel):
         if self.use_attention:
             representation = self.attn(outputs)
         else:
-            # representation = outputs.mean(dim=1)
-            representation = outputs[:, -1, :]
+            representation = outputs.mean(dim=1)
+            # representation = outputs[:, -1, :]
 
         logits = self.prediction_layer(representation)
         y_pred = logits.softmax(dim=-1)
