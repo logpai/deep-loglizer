@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 
 from IPython import embed
 
-# python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
+# python deeplog_demo.py --test_ratio 0.2 --train_anomaly_ratio 0 --feature_type sequentials --dataset BGL --label_type next_log --gpu 0 > logs/deeplog.0 2>&1 &
 
 parser = argparse.ArgumentParser()
 
@@ -36,7 +36,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 ##### model params:
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_directions", default=2, type=float)
-parser.add_argument("--embedding_dim", default=8, type=int)
+parser.add_argument("--embedding_dim", default=16, type=int)
 
 ##### dataset params
 parser.add_argument("--dataset", default="BGL", type=str)
@@ -44,8 +44,8 @@ parser.add_argument("--train_anomaly_ratio", default=0, type=float)
 parser.add_argument("--random_partition", action="store_true")
 parser.add_argument("--train_ratio", default=None, type=float)
 parser.add_argument("--test_ratio", default=0.2, type=float)
-parser.add_argument("--window_size", default=5, type=int)
-parser.add_argument("--stride", default=5, type=int)
+parser.add_argument("--window_size", default=10, type=int)
+parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
 parser.add_argument("--epoches", default=5, type=int)
