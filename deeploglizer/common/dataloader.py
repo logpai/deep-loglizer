@@ -70,6 +70,7 @@ def load_BGL(
 
     if train_ratio is None:
         train_ratio = 1 - test_ratio
+    assert train_ratio + test_ratio <= 1, "train_ratio + test_ratio should <= 1."
     train_lines = int(train_ratio * len(total_indice))
     test_lines = int(test_ratio * len(total_indice))
 

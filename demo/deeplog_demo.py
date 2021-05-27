@@ -34,8 +34,8 @@ parser.add_argument("--max_token_len", default=50, type=int)
 parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### model params:
-parser.add_argument("--hidden_size", default=256, type=int)
-parser.add_argument("--num_directions", default=2, type=float)
+parser.add_argument("--hidden_size", default=128, type=int)
+parser.add_argument("--num_directions", default=1, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
@@ -44,14 +44,14 @@ parser.add_argument("--train_anomaly_ratio", default=0, type=float)
 parser.add_argument("--random_partition", action="store_true")
 parser.add_argument("--train_ratio", default=None, type=float)
 parser.add_argument("--test_ratio", default=0.8, type=float)
-parser.add_argument("--window_size", default=3, type=int)
-parser.add_argument("--stride", default=3, type=int)
+parser.add_argument("--window_size", default=10, type=int)
+parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
 parser.add_argument("--epoches", default=5, type=int)
 parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
-parser.add_argument("--topk", default=50, type=int)
+parser.add_argument("--topk", default=10, type=int)
 
 ##### Others
 parser.add_argument("--random_seed", default=42, type=int)
