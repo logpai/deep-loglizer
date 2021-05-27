@@ -90,7 +90,7 @@ def load_BGL(
         idx_test = [
             idx
             for idx in idx_test
-            if (labels[idx] == 0 or (templates[idx] not in seen_normal))
+            if not (labels[idx] == 0 and (templates[idx] not in seen_normal))
         ]
 
     session_train = {
