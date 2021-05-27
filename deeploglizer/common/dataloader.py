@@ -52,7 +52,7 @@ def load_BGL(
     test_ratio=0.8,
     train_anomaly_ratio=0,
     random_partition=False,
-    random_seed=42,
+    filter_normal=True,
     **kwargs
 ):
     logging.info("Loading BGL logs from {}.".format(log_file))
@@ -81,6 +81,17 @@ def load_BGL(
         for idx in idx_train
         if (labels[idx] == 0 or (labels[idx] == 1 and decision(train_anomaly_ratio)))
     ]
+
+    if filter_normal:
+        logging.info(
+            "Filtering unseen normal tempalates in {} test data.".format(len(idx_test))
+        )
+        seen_normal = set(templates[idx_train].tolist())
+        idx_test = [
+            idx
+            for idx in idx_test
+            if (labels[idx] == 0 or (templates[idx] not in seen_normal))
+        ]
 
     session_train = {
         "all": {"templates": templates[idx_train].tolist(), "label": labels[idx_train]}
