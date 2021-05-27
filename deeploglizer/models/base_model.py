@@ -300,6 +300,7 @@ class ForcastBasedModel(nn.Module):
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
+                    best_results["converge"] = int(epoch)
                     self.save_model()
 
         self.load_model(self.model_save_file)
