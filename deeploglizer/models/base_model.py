@@ -213,9 +213,10 @@ class ForcastBasedModel(nn.Module):
                     window_anomaly = int(window_labels[i] not in candidates)
                     topk_res[f"window_pred_anomaly_{topk}"].append(window_anomaly)
             topk_res = pd.DataFrame(topk_res)
-
             store_df = pd.concat([store_df, topk_res], axis=1)
             store_df.to_csv("store_{}.csv".format(dtype), index=False)
+
+            logging.info("Finish generating store_df.")
 
             if self.eval_type == "session":
                 use_cols = ["session_idx", "window_anomalies"] + [
