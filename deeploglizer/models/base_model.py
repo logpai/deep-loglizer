@@ -172,13 +172,13 @@ class ForcastBasedModel(nn.Module):
             return eval_results
 
     def __evaluate_next_log(self, test_loader, dtype="test"):
-        self.eval()  # set to evaluation mode
+        model = self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
             store_dict = defaultdict(list)
             infer_start = time.time()
             for batch_input in test_loader:
-                return_dict = self.forward(self.__input2device(batch_input))
+                return_dict = model.forward(self.__input2device(batch_input))
                 y_pred = return_dict["y_pred"]
                 y_prob_topk, y_pred_topk = torch.topk(y_pred, self.topk)  # b x topk
 
