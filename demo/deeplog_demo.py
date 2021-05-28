@@ -35,7 +35,7 @@ parser.add_argument("--num_directions", default=1, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
-parser.add_argument("--dataset", default="BGL", type=str)
+parser.add_argument("--dataset", default="HDFS", type=str)
 parser.add_argument("--train_anomaly_ratio", default=0, type=float)
 parser.add_argument("--random_partition", action="store_true")
 parser.add_argument("--train_ratio", default=None, type=float)
