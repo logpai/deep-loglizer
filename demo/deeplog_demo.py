@@ -32,7 +32,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 ##### model params:
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_directions", default=2, type=float)
-parser.add_argument("--embedding_dim", default=16, type=int)
+parser.add_argument("--embedding_dim", default=1, type=int)
 
 ##### dataset params
 # parser.add_argument("--dataset", default="BGL", type=str)
@@ -48,8 +48,8 @@ parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
-parser.add_argument("--epoches", default=5, type=int)
-parser.add_argument("--learning_rate", default=0.01, type=float)
+parser.add_argument("--epoches", default=10, type=int)
+parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--topk", default=10, type=int)
 
