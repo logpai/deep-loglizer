@@ -6,11 +6,7 @@ import sys
 sys.path.append("../")
 import argparse
 from deeploglizer.models import LSTM
-from deeploglizer.common.dataloader import (
-    load_HDFS,
-    load_BGL,
-    log_dataset,
-)
+from deeploglizer.common.dataloader import load_sessions, log_dataset
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, set_device, dump_params
 from torch.utils.data import DataLoader
@@ -59,29 +55,15 @@ parser.add_argument("--gpu", default=0, type=int)
 
 params = vars(parser.parse_args())
 
-if params["dataset"] == "HDFS":
-    log_file = "../data/HDFS/HDFS.log_groundtruth.csv"
-    if not os.path.isfile(log_file):
-        log_file = "../data/HDFS/HDFS_100k.log_structured.csv"
-    label_file = "../data/HDFS/anomaly_label.csv"
-    params["log_file"] = log_file
-    params["label_file"] = label_file
-elif params["dataset"] == "BGL":
-    log_file = "../data/BGL/BGL.log_groundtruth.csv"
-    if not os.path.isfile(log_file):
-        log_file = "../data/BGL/BGL_100k.log_structured.csv"
-    params["log_file"] = log_file
-params["eval_type"] = "window" if params["dataset"] == "BGL" else "session"
+# pkl_dir = "../data/processed/HDFS/hdfs_no_train_anomaly_8_2"
+pkl_dir = "../data/processed/BGL/bgl_no_train_anomaly_8_2"
 
 model_save_path, hash_id = dump_params(params)
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 
-    if params["dataset"] == "HDFS":
-        session_train, session_test = load_HDFS(**params)
-    elif params["dataset"] == "BGL":
-        session_train, session_test = load_BGL(**params)
+    session_train, session_test = load_sessions(pkl_dir=pkl_dir)
 
     ext = FeatureExtractor(**params)
 

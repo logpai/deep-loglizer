@@ -21,6 +21,14 @@ from IPython import embed
 from deeploglizer.common.utils import decision
 
 
+def load_sessions(pkl_dir):
+    with open(os.path.join(pkl_dir, "session_train.pkl"), "rb") as fr:
+        session_train = pickle.load(fr)
+    with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
+        session_test = pickle.load(fr)
+    return session_train, session_test
+
+
 class log_dataset(Dataset):
     def __init__(self, session_dict, feature_type="semantics"):
         flatten_data_list = []
