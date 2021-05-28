@@ -26,6 +26,10 @@ def load_sessions(pkl_dir):
         session_train = pickle.load(fr)
     with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
         session_test = pickle.load(fr)
+
+    logging.info("Load from {}".format(pkl_dir))
+    logging.info("# train sessions {}".format(len(session_train)))
+    logging.info("# test sessions {}".format(len(session_test)))
     return session_train, session_test
 
 

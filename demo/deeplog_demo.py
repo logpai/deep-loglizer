@@ -55,8 +55,8 @@ parser.add_argument("--gpu", default=0, type=int)
 
 params = vars(parser.parse_args())
 
-# pkl_dir = "../data/processed/HDFS/hdfs_no_train_anomaly_8_2"
-pkl_dir = "../data/processed/BGL/bgl_no_train_anomaly_8_2"
+pkl_dir = "../data/processed/HDFS/hdfs_no_train_anomaly_8_2"
+# pkl_dir = "../data/processed/BGL/bgl_no_train_anomaly_8_2"
 
 model_save_path, hash_id = dump_params(params)
 
