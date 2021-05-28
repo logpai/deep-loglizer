@@ -51,7 +51,7 @@ parser.add_argument("--stride", default=1, type=int)
 parser.add_argument("--epoches", default=10, type=int)
 parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
-parser.add_argument("--topk", default=30, type=int)
+parser.add_argument("--topk", default=60, type=int)
 
 ##### Others
 parser.add_argument("--random_seed", default=42, type=int)
