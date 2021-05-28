@@ -13,7 +13,7 @@ outdir = "../data/processed/HDFS"
 np.random.seed(seed)
 
 params = {
-    log_file: "../data/HDFS/HDFS.log_groundtruth.csv",
+    "log_file": "../data/HDFS/HDFS.log_groundtruth.csv",
     # "log_file": "../data/HDFS/HDFS_100k.log_structured.csv",
     "label_file": "../data/HDFS/anomaly_label.csv",
     "train_ratio": None,
