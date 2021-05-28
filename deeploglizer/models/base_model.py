@@ -205,39 +205,6 @@ class ForcastBasedModel(nn.Module):
 
             count_start = time.time()
 
-            #### version1
-            t1 = time.time()
-            topk_res = defaultdict(list)
-            window_labels = store_df["window_labels"].values
-            y_pred_topk = store_df["y_pred_topk"].values
-            for i in range(window_labels.shape[0]):
-                for topk in range(1, self.topk + 1):
-                    candidates = y_pred_topk[i][:topk]
-                    window_anomaly = int(window_labels[i] not in candidates)
-                    topk_res[f"window_pred_anomaly_{topk}"].append(window_anomaly)
-            topk_res = pd.DataFrame(topk_res)
-            store_df = pd.concat([store_df, topk_res], axis=1)
-            # store_df.to_csv("store_{}_1.csv".format(dtype), index=False)
-            logging.info("Finish generating store_df.")
-
-            if self.eval_type == "session":
-                use_cols = ["session_idx", "window_anomalies"] + [
-                    f"window_pred_anomaly_{topk}" for topk in range(1, self.topk + 1)
-                ]
-                session_df = (
-                    store_df[use_cols].groupby("session_idx", as_index=False).sum()
-                )
-            else:
-                session_df = store_df
-            # session_df.to_csv("session_{}_1.csv".format(dtype), index=False)
-            t2 = time.time()
-            logging.info("Version1 : [{}]".format(t2 - t1))
-            ##### version1 end
-
-            ##### version2 start
-            t1 = time.time()
-            logging.info("converting topk .")
-
             topkdf = pd.DataFrame(store_df["y_pred_topk"].tolist())
             logging.info("Calculating acc sum.")
             hit_df = pd.DataFrame()
@@ -252,7 +219,6 @@ class ForcastBasedModel(nn.Module):
             acc_sum[acc_sum == 0] = 2 ** (1 + len(topkdf.columns))
             hit_df["acc_num"] = acc_sum
 
-            logging.info("Checking check num.")
             for col in sorted(topkdf.columns):
                 topk = col + 1
                 check_num = 2 ** topk
@@ -273,9 +239,6 @@ class ForcastBasedModel(nn.Module):
             else:
                 session_df = store_df
             # session_df.to_csv("session_{}_2.csv".format(dtype), index=False)
-            t2 = time.time()
-            logging.info("Version2 : [{}]".format(t2 - t1))
-            #### version2 end
 
             for topk in range(1, self.topk + 1):
                 pred = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int)
