@@ -13,6 +13,7 @@ import os
 import numpy as np
 import re
 import pickle
+import json
 from sklearn.utils import shuffle
 from collections import OrderedDict, defaultdict
 from sklearn.model_selection import train_test_split
@@ -22,14 +23,26 @@ from deeploglizer.common.utils import decision
 
 
 def load_sessions(pkl_dir):
+    with open(os.path.join(pkl_dir, "data_desc.json"), "r") as fr:
+        data_desc = json.load(fr)
     with open(os.path.join(pkl_dir, "session_train.pkl"), "rb") as fr:
         session_train = pickle.load(fr)
     with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
         session_test = pickle.load(fr)
 
+    train_labels = [v["label"] for k, v in session_train.items()]
+    test_labels = [v["label"] for k, v in session_test.items()]
+
+    num_train = len(session_train)
+    ratio_train = sum(train_labels) / num_train
+    num_test = len(session_test)
+    ratio_test = sum(test_labels) / num_test
     logging.info("Load from {}".format(pkl_dir))
-    logging.info("# train sessions {}".format(len(session_train)))
-    logging.info("# test sessions {}".format(len(session_test)))
+    logging.info(json.dumps(data_desc, indent=4))
+    logging.info(
+        "# train sessions {} ({:.2f} anomalies)".format(num_train, ratio_train)
+    )
+    logging.info("# test sessions {} ({:.2f} anomalies)".format(num_test, ratio_test))
     return session_train, session_test
 
 
