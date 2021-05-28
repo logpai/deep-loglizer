@@ -119,9 +119,7 @@ def load_HDFS(
     train_ratio=None,
     test_ratio=None,
     train_anomaly_ratio=1,
-    first_n_rows=None,
     random_partition=False,
-    random_seed=42,
     **kwargs
 ):
     """Load HDFS structured log into train and test data
@@ -143,92 +141,51 @@ def load_HDFS(
     label_data["Label"] = label_data["Label"].map(lambda x: int(x == "Anomaly"))
     label_data_dict = dict(zip(label_data["BlockId"], label_data["Label"]))
 
-    if first_n_rows is None:
-        session_dict = OrderedDict()
-        column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
-        for idx, row in enumerate(struct_log.values):
-            blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
-            blkId_set = set(blkId_list)
-            for blk_Id in blkId_set:
-                if blk_Id not in session_dict:
-                    session_dict[blk_Id] = defaultdict(list)
-                session_dict[blk_Id]["templates"].append(
-                    row[column_idx["EventTemplate"]]
-                )
+    session_dict = OrderedDict()
+    column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
+    for _, row in enumerate(struct_log.values):
+        blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
+        blkId_set = set(blkId_list)
+        for blk_Id in blkId_set:
+            if blk_Id not in session_dict:
+                session_dict[blk_Id] = defaultdict(list)
+            session_dict[blk_Id]["templates"].append(row[column_idx["EventTemplate"]])
 
-        for k in session_dict.keys():
-            session_dict[k]["label"] = label_data_dict[k]
+    for k in session_dict.keys():
+        session_dict[k]["label"] = label_data_dict[k]
 
-        session_idx = list(range(len(session_dict)))
-        # split data
-        if random_partition:
-            logging.info("Using random partition.")
-            np.random.shuffle(session_idx)
+    session_idx = list(range(len(session_dict)))
+    # split data
+    if random_partition:
+        logging.info("Using random partition.")
+        np.random.shuffle(session_idx)
 
-        session_ids = np.array(list(session_dict.keys()))
-        session_labels = np.array(list(map(lambda x: label_data_dict[x], session_ids)))
+    session_ids = np.array(list(session_dict.keys()))
+    session_labels = np.array(list(map(lambda x: label_data_dict[x], session_ids)))
 
-        if train_ratio is None:
-            train_ratio = 1 - test_ratio
-        train_lines = int(train_ratio * len(session_idx))
-        test_lines = int(test_ratio * len(session_idx))
+    if train_ratio is None:
+        train_ratio = 1 - test_ratio
+    train_lines = int(train_ratio * len(session_idx))
+    test_lines = int(test_ratio * len(session_idx))
 
-        session_idx_train = session_idx[0:train_lines]
-        session_idx_test = session_idx[-test_lines:]
+    session_idx_train = session_idx[0:train_lines]
+    session_idx_test = session_idx[-test_lines:]
 
-        session_id_train = session_ids[session_idx_train]
-        session_id_test = session_ids[session_idx_test]
-        session_labels_train = session_labels[session_idx_train]
-        session_labels_test = session_labels[session_idx_test]
+    session_id_train = session_ids[session_idx_train]
+    session_id_test = session_ids[session_idx_test]
+    session_labels_train = session_labels[session_idx_train]
+    session_labels_test = session_labels[session_idx_test]
 
-        logging.info("Total # sessions: {}".format(len(session_ids)))
+    logging.info("Total # sessions: {}".format(len(session_ids)))
 
-        session_train = {
-            k: session_dict[k]
-            for k in session_id_train
-            if (session_dict[k]["label"] == 0)
-            or (session_dict[k]["label"] == 1 and decision(train_anomaly_ratio))
-        }
+    session_train = {
+        k: session_dict[k]
+        for k in session_id_train
+        if (session_dict[k]["label"] == 0)
+        or (session_dict[k]["label"] == 1 and decision(train_anomaly_ratio))
+    }
 
-        session_test = {k: session_dict[k] for k in session_id_test}
-    else:
-        logging.info("Using first {} rows to build training data.".format(first_n_rows))
-        session_train = OrderedDict()
-        session_test = OrderedDict()
-        column_idx = {col: idx for idx, col in enumerate(struct_log.columns)}
-        blk_count = 0
-        for idx, row in enumerate(struct_log.values):
-            blkId_list = re.findall(r"(blk_-?\d+)", row[column_idx["Content"]])
-            blkId_set = set(blkId_list)
-            if idx < first_n_rows:
-                for blk_Id in blkId_set:
-                    if blk_Id not in session_train:
-                        session_train[blk_Id] = defaultdict(list)
-                    session_train[blk_Id]["templates"].append(
-                        row[column_idx["EventTemplate"]]
-                    )
-            else:
-                for blk_Id in blkId_set:
-                    if blk_Id not in session_test:
-                        session_test[blk_Id] = defaultdict(list)
-                        blk_count += 1
-                    session_test[blk_Id]["templates"].append(
-                        row[column_idx["EventTemplate"]]
-                    )
-
-        tmp_dict = defaultdict(list)
-        for k in session_train.keys():
-            session_train[k]["label"] = label_data_dict[k]
-            session_labels_train.append(label_data_dict[k])
-
-        session_train = {
-            k: v
-            for k, v in session_train.items()
-            if (v["label"] == 0) or (v["label"] == 1 and decision(train_anomaly_ratio))
-        }
-
-        for k in session_test.keys():
-            session_test[k]["label"] = label_data_dict[k]
+    session_test = {k: session_dict[k] for k in session_id_test}
 
     session_labels_train = [v["label"] for k, v in session_train.items()]
     session_labels_test = [v["label"] for k, v in session_test.items()]

@@ -297,7 +297,6 @@ class ForcastBasedModel(nn.Module):
             self.time_tracker["train"] = epoch_time_end - epoch_time_start
 
             if test_loader is not None and (epoch % 1 == 0):
-                self.evaluate(train_loader, "train")
                 eval_results = self.evaluate(test_loader)
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
