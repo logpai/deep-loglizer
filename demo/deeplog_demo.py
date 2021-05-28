@@ -31,21 +31,25 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### model params:
 parser.add_argument("--hidden_size", default=128, type=int)
-parser.add_argument("--num_directions", default=1, type=float)
+parser.add_argument("--num_directions", default=2, type=float)
 parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
+# parser.add_argument("--dataset", default="BGL", type=str)
+# parser.add_argument(
+#     "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
+# )
+
 parser.add_argument("--dataset", default="HDFS", type=str)
-parser.add_argument("--train_anomaly_ratio", default=0, type=float)
-parser.add_argument("--random_partition", action="store_true")
-parser.add_argument("--train_ratio", default=None, type=float)
-parser.add_argument("--test_ratio", default=0.8, type=float)
+parser.add_argument(
+    "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+)
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
 parser.add_argument("--epoches", default=5, type=int)
-parser.add_argument("--learning_rate", default=0.001, type=float)
+parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--topk", default=10, type=int)
 
@@ -55,9 +59,7 @@ parser.add_argument("--gpu", default=0, type=int)
 
 params = vars(parser.parse_args())
 
-pkl_dir = "../data/processed/HDFS/hdfs_no_train_anomaly_8_2"
-# pkl_dir = "../data/processed/BGL/bgl_no_train_anomaly_8_2"
-
+pkl_dir = params["pkl_dir"]
 model_save_path, hash_id = dump_params(params)
 
 if __name__ == "__main__":

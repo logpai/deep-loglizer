@@ -10,7 +10,7 @@ from collections import OrderedDict, defaultdict
 
 eval_name = "bgl_no_train_anomaly_8_2"
 seed = 42
-outdir = "../data/processed/BGL"
+pkl_dir = "../data/processed/BGL"
 np.random.seed(seed)
 
 params = {
@@ -23,8 +23,8 @@ params = {
     "train_anomaly_ratio": 0,
 }
 
-outdir = os.path.join(outdir, eval_name)
-os.makedirs(outdir, exist_ok=True)
+pkl_dir = os.path.join(pkl_dir, eval_name)
+os.makedirs(pkl_dir, exist_ok=True)
 
 
 def load_BGL(
@@ -105,11 +105,11 @@ def load_BGL(
     print("# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly))
     print("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly))
 
-    with open(os.path.join(outdir, "session_train.pkl"), "wb") as fw:
+    with open(os.path.join(pkl_dir, "session_train.pkl"), "wb") as fw:
         pickle.dump(session_train, fw)
-    with open(os.path.join(outdir, "session_test.pkl"), "wb") as fw:
+    with open(os.path.join(pkl_dir, "session_test.pkl"), "wb") as fw:
         pickle.dump(session_test, fw)
-    json_pretty_dump(params, os.path.join(outdir, "data_desc.json"))
+    json_pretty_dump(params, os.path.join(pkl_dir, "data_desc.json"))
     return session_train, session_test
 
 
