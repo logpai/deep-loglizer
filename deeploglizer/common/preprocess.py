@@ -339,7 +339,7 @@ class FeatureExtractor(BaseEstimator):
         if datatype == "train":
             self.__generate_windows(session_dict, self.stride)
         else:
-            self.__generate_windows(session_dict, self.window_size)
+            self.__generate_windows(session_dict, self.stride)
 
         # for each window
         for session_id, data_dict in session_dict.items():
