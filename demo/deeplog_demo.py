@@ -35,15 +35,15 @@ parser.add_argument("--num_directions", default=2, type=float)
 parser.add_argument("--embedding_dim", default=1, type=int)
 
 ##### dataset params
-# parser.add_argument("--dataset", default="BGL", type=str)
-# parser.add_argument(
-#     "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
-# )
-
-parser.add_argument("--dataset", default="HDFS", type=str)
+parser.add_argument("--dataset", default="BGL", type=str)
 parser.add_argument(
-    "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+    "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
 )
+
+# parser.add_argument("--dataset", default="HDFS", type=str)
+# parser.add_argument(
+#     "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+# )
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
