@@ -203,19 +203,26 @@ class ForcastBasedModel(nn.Module):
             best_result = None
             best_f1 = -float("inf")
 
-            # embed()
             count_start = time.time()
 
-            topk_res = defaultdict(list)
-            window_labels = store_df["window_labels"].values
-            y_pred_topk = store_df["y_pred_topk"].values
-            for i in range(window_labels.shape[0]):
-                for topk in range(1, self.topk + 1):
-                    candidates = y_pred_topk[i][:topk]
-                    window_anomaly = int(window_labels[i] not in candidates)
-                    topk_res[f"window_pred_anomaly_{topk}"].append(window_anomaly)
-            topk_res = pd.DataFrame(topk_res)
-            store_df = pd.concat([store_df, topk_res], axis=1)
+            topkdf = pd.DataFrame(store_df["y_pred_topk"].tolist())
+            hit_df = pd.DataFrame()
+            for col in sorted(topkdf.columns):
+                topk = col + 1
+                hit = (topkdf[col] == store_df["window_labels"]).astype(int)
+                hit_df[topk] = hit
+                if col == 0:
+                    acc_sum = 2 ** topk * hit
+                else:
+                    acc_sum += 2 ** topk * hit
+            hit_df["acc_num"] = acc_sum
+
+            for col in sorted(topkdf.columns):
+                topk = col + 1
+                check_num = 2 ** topk
+                store_df["window_pred_anomaly_{}".format(topk)] = (
+                    ~(hit_df["acc_num"] <= check_num)
+                ).astype(int)
             store_df.to_csv("store_{}.csv".format(dtype), index=False)
 
             logging.info("Finish generating store_df.")
