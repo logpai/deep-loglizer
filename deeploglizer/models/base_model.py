@@ -273,7 +273,7 @@ class ForcastBasedModel(nn.Module):
             else:
                 session_df = store_df
             # session_df.to_csv("session_{}_2.csv".format(dtype), index=False)
-
+            t2 = time.time()
             logging.info("Version2 : [{}]".format(t2 - t1))
             #### version2 end
 
