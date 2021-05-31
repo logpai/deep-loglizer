@@ -6,11 +6,7 @@ import sys
 sys.path.append("../")
 import argparse
 from deeploglizer.models import CNN
-from deeploglizer.common.dataloader import (
-    load_HDFS,
-    load_BGL,
-    log_dataset,
-)
+from deeploglizer.common.dataloader import load_sessions, log_dataset
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, set_device, dump_params
 from torch.utils.data import DataLoader
@@ -41,11 +37,11 @@ parser.add_argument("--embedding_dim", default=8, type=int)
 ##### dataset params
 # parser.add_argument("--dataset", default="BGL", type=str)
 # parser.add_argument(
-#     "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
+#     "--pkl_dir", default="../data/processed/BGL/bgl_1.0_train_anomaly_8_2", type=str
 # )
 parser.add_argument("--dataset", default="HDFS", type=str)
 parser.add_argument(
-    "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+    "--pkl_dir", default="../data/processed/HDFS/hdfs_1.0_train_anomaly_8_2", type=str
 )
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
@@ -67,12 +63,7 @@ model_save_path, hash_id = dump_params(params)
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
-
-    if params["dataset"] == "HDFS":
-        session_train, session_test = load_HDFS(**params)
-    elif params["dataset"] == "BGL":
-        session_train, session_test = load_BGL(**params)
-
+    session_train, session_test = load_sessions(pkl_dir=pkl_dir)
     ext = FeatureExtractor(**params)
 
     session_train = ext.fit_transform(session_train)
