@@ -8,7 +8,7 @@ from utils import decision, json_pretty_dump
 from collections import OrderedDict, defaultdict
 
 
-eval_name = "bgl_no_train_anomaly_8_2"
+eval_name = "bgl_1.0_train_anomaly_8_2"
 seed = 42
 pkl_dir = "../data/processed/BGL"
 np.random.seed(seed)
@@ -20,7 +20,7 @@ params = {
     "train_ratio": None,
     "test_ratio": 0.2,
     "random_sessions": True,
-    "train_anomaly_ratio": 0,
+    "train_anomaly_ratio": 1,
 }
 
 pkl_dir = os.path.join(pkl_dir, eval_name)

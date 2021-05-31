@@ -7,7 +7,7 @@ from utils import decision, json_pretty_dump
 from collections import OrderedDict, defaultdict
 
 
-eval_name = "hdfs_no_train_anomaly_8_2"
+eval_name = "hdfs_1.0_train_anomaly_8_2"
 seed = 42
 pkl_dir = "../data/processed/HDFS"
 np.random.seed(seed)
@@ -18,7 +18,7 @@ params = {
     "label_file": "../data/HDFS/anomaly_label.csv",
     "train_ratio": None,
     "test_ratio": 0.2,
-    "train_anomaly_ratio": 0,
+    "train_anomaly_ratio": 1,
     "random_sessions": True,
 }
 

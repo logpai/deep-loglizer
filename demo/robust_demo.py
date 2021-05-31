@@ -16,13 +16,13 @@ from IPython import embed
 # python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
 parser = argparse.ArgumentParser()
 
-##################### fixed for Deeplog ↓ ####################
+##################### fixed for supervised LSTM ↓ ####################
 parser.add_argument("--feature_type", default="sequentials", type=str)
 parser.add_argument("--use_attention", action="store_true")
 parser.add_argument("--label_type", default="anomaly", type=str)
 parser.add_argument("--use_tfidf", action="store_true")
 parser.add_argument("--pretrain_path", default=None, type=str)
-##################### fixed for Deeplog ↑ ####################
+##################### fixed for supervised LSTM ↑ ####################
 
 ##### for semantics:
 parser.add_argument("--max_token_len", default=50, type=int)
@@ -30,10 +30,9 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 
 ##### model params:
-parser.add_argument("--embedding_dim", default=8, type=int)
-parser.add_argument("--nhead", default=4, type=float)
-parser.add_argument("--hidden_size", default=100, type=int)
-parser.add_argument("--num_layers", default=1, type=int)
+parser.add_argument("--hidden_size", default=200, type=int)
+parser.add_argument("--num_directions", default=2, type=float)
+parser.add_argument("--embedding_dim", default=1, type=int)
 
 ##### dataset params
 # parser.add_argument("--dataset", default="BGL", type=str)
