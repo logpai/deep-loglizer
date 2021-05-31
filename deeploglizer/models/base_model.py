@@ -147,20 +147,16 @@ class ForcastBasedModel(nn.Module):
                 store_dict["window_anomalies"].extend(
                     tensor2flatten_arr(batch_input["window_anomalies"])
                 )
-                store_dict["window_probs"].extend(tensor2flatten_arr(y_prob))
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
             logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
 
             store_df = pd.DataFrame(store_dict)
-            if self.eval_type == "session":
-                use_cols = ["session_idx", "window_anomalies", "window_preds"]
-                session_df = (
-                    store_df[use_cols].groupby("session_idx", as_index=False).sum()
-                )
-            else:
-                session_df = store_df
+            use_cols = ["session_idx", "window_anomalies", "window_preds"]
+            session_df = (
+                store_df[use_cols].groupby("session_idx", as_index=False).sum()
+            )
             pred = (session_df[f"window_preds"] > 0).astype(int)
             y = (session_df["window_anomalies"] > 0).astype(int)
 
