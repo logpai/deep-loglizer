@@ -2,13 +2,20 @@ from logging import currentframe
 import os
 import re
 import pickle
+import argparse
 import pandas as pd
 import numpy as np
 from utils import decision, json_pretty_dump
 from collections import OrderedDict, defaultdict
 
+parser = argparse.ArgumentParser()
 
-eval_name = "bgl_1.0_train_anomaly_8_2"
+parser.add_argument("--eval_name", default="bgl_1.0_train_anomaly_8_2", type=str)
+parser.add_argument("--train_anomaly_ratio", default=1.0, type=float)
+
+params = vars(parser.parse_args())
+
+eval_name = params["eval_name"]
 seed = 42
 pkl_dir = "../data/processed/BGL"
 np.random.seed(seed)
@@ -20,7 +27,7 @@ params = {
     "train_ratio": None,
     "test_ratio": 0.2,
     "random_sessions": True,
-    "train_anomaly_ratio": 1,
+    "train_anomaly_ratio": params["train_anomaly_ratio"],
 }
 
 pkl_dir = os.path.join(pkl_dir, eval_name)
