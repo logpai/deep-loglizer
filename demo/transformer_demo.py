@@ -11,8 +11,6 @@ from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, set_device, dump_params
 from torch.utils.data import DataLoader
 
-from IPython import embed
-
 # python deeplog_demo.py --test_ratio 0.8 --train_anomaly_ratio 1 -- feature_type sequentials --dataset HDFS --label_type anomaly --gpu 3 > logs/deeplog.4 2>&1 &
 
 parser = argparse.ArgumentParser()
