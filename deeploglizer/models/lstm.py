@@ -41,6 +41,7 @@ class LSTM(ForcastBasedModel):
         meta_data,
         hidden_size=100,
         num_directions=2,
+        num_layers=1,
         window_size=None,
         use_attention=False,
         embedding_dim=16,
@@ -79,6 +80,7 @@ class LSTM(ForcastBasedModel):
             input_size=embedding_dim,
             hidden_size=self.hidden_size,
             batch_first=True,
+            num_layers=num_layers,
             bidirectional=(self.num_directions == 2),
         )
         if self.use_attention:

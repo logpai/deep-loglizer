@@ -52,6 +52,7 @@ class ForcastBasedModel(nn.Module):
         freeze=False,
         gpu=-1,
         anomaly_ratio=None,
+        patience=3,
         **kwargs,
     ):
         super(ForcastBasedModel, self).__init__()
@@ -62,6 +63,7 @@ class ForcastBasedModel(nn.Module):
         self.label_type = label_type
         self.eval_type = eval_type
         self.anomaly_ratio = anomaly_ratio  # only used for auto encoder
+        self.patience = patience
         self.time_tracker = {}
 
         os.makedirs(model_save_path, exist_ok=True)
@@ -279,6 +281,7 @@ class ForcastBasedModel(nn.Module):
         )
         best_f1 = -float("inf")
         best_results = None
+        worse_count = 0
         for epoch in range(1, epoches + 1):
             epoch_time_start = time.time()
             model = self.train()
@@ -307,6 +310,12 @@ class ForcastBasedModel(nn.Module):
                     best_results = eval_results
                     best_results["converge"] = int(epoch)
                     self.save_model()
+                    worse_count = 0
+                else:
+                    worse_count += 1
+                    if worse_count >= self.patience:
+                        logging.info("Early stop at epoch: {}".format(epoch))
+                        break
 
         self.load_model(self.model_save_file)
         return best_results

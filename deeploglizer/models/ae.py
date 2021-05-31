@@ -21,6 +21,7 @@ class AutoEncoder(ForcastBasedModel):
         self,
         meta_data,
         hidden_size=100,
+        num_layers=1,
         num_directions=2,
         embedding_dim=16,
         model_save_path="./ae_models",
@@ -55,6 +56,7 @@ class AutoEncoder(ForcastBasedModel):
         self.rnn = nn.LSTM(
             input_size=embedding_dim,
             hidden_size=self.hidden_size,
+            num_layers=num_layers,
             batch_first=True,
             bidirectional=(self.num_directions == 2),
         )

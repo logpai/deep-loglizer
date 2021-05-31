@@ -28,7 +28,8 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### model params:
 parser.add_argument("--hidden_size", default=200, type=int)
-parser.add_argument("--num_directions", default=1, type=float)
+parser.add_argument("--num_directions", default=1, type=int)
+parser.add_argument("--num_layers", default=1, type=int)
 parser.add_argument("--embedding_dim", default=8, type=int)
 
 ##### dataset params
@@ -44,11 +45,11 @@ parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
-parser.add_argument("--epoches", default=10, type=int)
+parser.add_argument("--epoches", default=100, type=int)
 parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--anomaly_ratio", default=0.03, type=float)
-# 0.03 for HDFS, xxx for BGL
+# 0.03 for HDFS, 0.07 for BGL
 
 
 ##### Others

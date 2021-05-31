@@ -48,7 +48,7 @@ parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
-parser.add_argument("--epoches", default=10, type=int)
+parser.add_argument("--epoches", default=100, type=int)
 parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 
