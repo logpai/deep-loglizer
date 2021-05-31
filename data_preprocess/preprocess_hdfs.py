@@ -16,7 +16,7 @@ params = vars(parser.parse_args())
 
 eval_name = params["eval_name"]
 seed = 42
-pkl_dir = "../data/processed/BGL"
+pkl_dir = "../data/processed/HDFS"
 np.random.seed(seed)
 
 params = {

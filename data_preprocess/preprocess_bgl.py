@@ -42,9 +42,9 @@ def load_BGL(
     random_sessions,
     train_anomaly_ratio,
 ):
+    print("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     # struct_log.sort_values(by=["Timestamp"], inplace=True)
-    print("{} lines loaded.".format(struct_log.shape[0]))
 
     struct_log["Label"] = struct_log["Label"].map(lambda x: x != "-").astype(int).values
     struct_log["time"] = pd.to_datetime(
