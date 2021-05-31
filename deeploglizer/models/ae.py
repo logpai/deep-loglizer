@@ -29,7 +29,6 @@ class AutoEncoder(ForcastBasedModel):
         eval_type="session",
         topk=5,
         use_tfidf=False,
-        pretrain_matrix=None,
         freeze=False,
         gpu=-1,
         **kwargs
@@ -43,9 +42,9 @@ class AutoEncoder(ForcastBasedModel):
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
-            pretrain_matrix=pretrain_matrix,
             freeze=freeze,
             gpu=gpu,
+            **kwargs
         )
         self.feature_type = feature_type
         self.label_type = label_type

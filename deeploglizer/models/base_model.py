@@ -49,9 +49,10 @@ class ForcastBasedModel(nn.Module):
         topk,
         use_tfidf,
         embedding_dim,
-        pretrain_matrix=None,
         freeze=False,
         gpu=-1,
+        anomaly_ratio=None,
+        **kwargs,
     ):
         super(ForcastBasedModel, self).__init__()
         self.device = set_device(gpu)
@@ -60,6 +61,7 @@ class ForcastBasedModel(nn.Module):
         self.feature_type = feature_type
         self.label_type = label_type
         self.eval_type = eval_type
+        self.anomaly_ratio = anomaly_ratio  # only used for auto encoder
         self.time_tracker = {}
 
         os.makedirs(model_save_path, exist_ok=True)
@@ -105,19 +107,17 @@ class ForcastBasedModel(nn.Module):
 
             store_df = pd.DataFrame(store_dict)
 
-            if self.eval_type == "session":
-                use_cols = ["session_idx", "window_anomalies", "window_preds"]
-                session_df = (
-                    store_df[use_cols]
-                    .groupby("session_idx", as_index=False)
-                    .max()  # most anomalous window
-                )
-            else:
-                session_df = store_df
-
-            anomaly_ratio = 0.0146
+            use_cols = ["session_idx", "window_anomalies", "window_preds"]
+            session_df = (
+                store_df[use_cols]
+                .groupby("session_idx", as_index=False)
+                .max()  # most anomalous window
+            )
+            assert (
+                self.anomaly_ratio is not None
+            ), "anomaly_ratio should be specified for autoencoder!"
             thre = np.percentile(
-                session_df[f"window_preds"].values, 100 - anomaly_ratio * 100
+                session_df[f"window_preds"].values, 100 - self.anomaly_ratio * 100
             )
             pred = (session_df[f"window_preds"] > thre).astype(int)
             y = (session_df["window_anomalies"] > 0).astype(int)
@@ -154,9 +154,7 @@ class ForcastBasedModel(nn.Module):
 
             store_df = pd.DataFrame(store_dict)
             use_cols = ["session_idx", "window_anomalies", "window_preds"]
-            session_df = (
-                store_df[use_cols].groupby("session_idx", as_index=False).sum()
-            )
+            session_df = store_df[use_cols].groupby("session_idx", as_index=False).sum()
             pred = (session_df[f"window_preds"] > 0).astype(int)
             y = (session_df["window_anomalies"] > 0).astype(int)
 

@@ -19,7 +19,6 @@ class Transformer(ForcastBasedModel):
         eval_type="session",
         topk=5,
         use_tfidf=False,
-        pretrain_matrix=None,
         freeze=False,
         gpu=-1,
         **kwargs
@@ -33,7 +32,6 @@ class Transformer(ForcastBasedModel):
             topk=topk,
             use_tfidf=use_tfidf,
             embedding_dim=embedding_dim,
-            pretrain_matrix=pretrain_matrix,
             freeze=freeze,
             gpu=gpu,
         )
