@@ -21,6 +21,7 @@ np.random.seed(seed)
 
 params = {
     "log_file": "../data/HDFS/HDFS.log_groundtruth.csv",
+    "label_file": "../data/HDFS/anomaly_label.csv",
     # "log_file": "../data/HDFS/HDFS_100k.log_structured.csv",
     "time_range": 60,  # 60 seconds
     "train_ratio": None,
