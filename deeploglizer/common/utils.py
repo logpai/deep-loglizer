@@ -30,6 +30,7 @@ def dump_params(params):
         handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
     )
 
+    logging.info(json.dumps(params, indent=4))
     return save_dir, hash_id
 
 

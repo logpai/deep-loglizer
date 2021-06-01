@@ -4,5 +4,5 @@
 # --num_layers 1
 
 # w semantics
-python lstm_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_1.0_train_anomaly_8_2 --label_type anomaly --window_size 10 --feature_type semantics --use_tfidf
+python lstm_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_1.0_train_anomaly_8_2 --label_type anomaly --window_size 10 --feature_type semantics --use_tfidf --gpu 0 B
 
