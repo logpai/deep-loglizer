@@ -6,5 +6,5 @@
 # --embedding_dim 8
 
 # wo semantics
-python cnn_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_no_train_anomaly_8_2 --window_size 10 --feature_type semantics --use_tfidf
+python cnn_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_1.0_train_anomaly_8_2 --window_size 10 --feature_type semantics --use_tfidf
 
