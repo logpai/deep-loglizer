@@ -30,7 +30,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 
 ##### model params:
 parser.add_argument("--embedding_dim", default=8, type=int)
-parser.add_argument("--nhead", default=4, type=float)
+parser.add_argument("--nhead", default=4, type=int)
 parser.add_argument("--hidden_size", default=100, type=int)
 parser.add_argument("--num_layers", default=1, type=int)
 
