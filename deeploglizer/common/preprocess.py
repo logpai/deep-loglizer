@@ -338,7 +338,7 @@ class FeatureExtractor(BaseEstimator):
             if self.use_tfidf:
                 indice = self.vocab.transform_tfidf(ulog).toarray()
             else:
-                indice = self.vocab.logs2idx(ulog)
+                indice = np.array(self.vocab.logs2idx(ulog))
             log2idx = {log: indice[idx] for idx, log in enumerate(ulog)}
             log2idx["PADDING"] = np.zeros(indice.shape[1]).reshape(-1)
             logging.info("Extracting semantic features.")
