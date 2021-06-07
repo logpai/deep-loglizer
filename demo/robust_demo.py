@@ -59,7 +59,7 @@ parser.add_argument("--gpu", default=0, type=int)
 params = vars(parser.parse_args())
 
 pkl_dir = params["pkl_dir"]
-model_save_path, hash_id = dump_params(params)
+model_save_path = dump_params(params)
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])

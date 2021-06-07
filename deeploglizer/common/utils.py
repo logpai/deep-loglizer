@@ -1,3 +1,4 @@
+import sys
 import torch
 import random
 import os
@@ -8,12 +9,49 @@ import pickle
 import random
 import hashlib
 import logging
+from datetime import datetime
+
+
+def dump_final_results(params, eval_results, model):
+    result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
+
+    key_info = [
+        "dataset",
+        "train_anomaly_ratio",
+        "feature_type",
+        "label_type",
+        "use_attention",
+    ]
+
+    args = sys.argv
+    model_name = args[0].replace("_demo.py", "")
+    args = args[1:]
+    input_params = [
+        "{}:{}".format(args[idx * 2].strip("--"), args[idx * 2 + 1])
+        for idx in range(len(args) // 2)
+    ]
+    recorded_params = ["{}:{}".format(k, v) for k, v in params.items() if k in key_info]
+
+    params_str = "\t".join(input_params + recorded_params)
+
+    with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
+        info = "{} {} {} {} {} train: {:.3f} test: {:.3f}\n".format(
+            datetime.now().strftime("%Y%m%d-%H%M%S"),
+            params["hash_id"],
+            model_name,
+            params_str,
+            result_str,
+            model.time_tracker["train"],
+            model.time_tracker["test"],
+        )
+        fw.write(info)
 
 
 def dump_params(params):
     hash_id = hashlib.md5(
         str(sorted([(k, v) for k, v in params.items()])).encode("utf-8")
     ).hexdigest()[0:8]
+    params["hash_id"] = hash_id
     save_dir = os.path.join("./experiment_records", hash_id)
     os.makedirs(save_dir, exist_ok=True)
 
@@ -31,7 +69,7 @@ def dump_params(params):
     )
 
     logging.info(json.dumps(params, indent=4))
-    return save_dir, hash_id
+    return save_dir
 
 
 def decision(probability):

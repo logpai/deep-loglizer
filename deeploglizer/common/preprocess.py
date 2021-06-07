@@ -42,7 +42,7 @@ class Vocab:
         self.max_token_len = max_token_len
         self.min_token_count = min_token_count
         self.use_tfidf = use_tfidf
-        self.word2idx = {"padding_token": 0, "oov_token": 1}
+        self.word2idx = {"PADDING": 0, "OOV": 1}
         self.token_vocab_size = None
 
     def __tokenize_log(self, log):
@@ -192,7 +192,7 @@ class FeatureExtractor(BaseEstimator):
                     i += stride
                 else:
                     window = templates[i:-1]
-                    window.extend(["padding_token"] * (self.window_size - len(window)))
+                    window.extend(["PADDING"] * (self.window_size - len(window)))
                     next_log = self.log2id_train.get(templates[-1], 1)
 
                     if session_id == "all":
@@ -248,16 +248,11 @@ class FeatureExtractor(BaseEstimator):
             total_features.append(ids)
         return np.array(total_features)
 
-    def __window2semantics(self, windows):
+    def __window2semantics(self, windows, log2idx):
         # input: raw windows
         # output: encoded token matrix,
-        total_idx = []
-        for window in windows:
-            if self.use_tfidf:
-                total_idx.append(self.vocab.transform_tfidf(window).toarray())
-            else:
-                total_idx.append(self.vocab.logs2idx(window))
-        return np.array(total_idx)
+        total_idx = [list(map(lambda x: log2idx[x], window)) for window in windows]
+        return np.vstack(total_idx)
 
     def save(self):
         logging.info("Saving feature extractor to {}.".format(self.cache_dir))
@@ -322,12 +317,10 @@ class FeatureExtractor(BaseEstimator):
 
     def transform(self, session_dict, datatype="train"):
         logging.info("Transforming {} data.".format(datatype))
+        ulog = set(itertools.chain(*[v["templates"] for k, v in session_dict.items()]))
         if datatype == "test":
             # handle new logs
-            ulog_test = set(
-                itertools.chain(*[v["templates"] for k, v in session_dict.items()])
-            )
-            ulog_new = ulog_test - self.ulog_train
+            ulog_new = ulog - self.ulog_train
             logging.info(f"{len(ulog_new)} new templates show while testing.")
 
         if self.cache:
@@ -341,19 +334,26 @@ class FeatureExtractor(BaseEstimator):
         else:
             self.__generate_windows(session_dict, self.stride)
 
+        if self.feature_type == "semantics":
+            if self.use_tfidf:
+                indice = self.vocab.transform_tfidf(ulog).toarray()
+            else:
+                indice = self.vocab.logs2idx(ulog)
+            log2idx = {log: indice[idx] for idx, log in enumerate(ulog)}
+            log2idx["PADDING"] = np.zeros(indice.shape[1]).reshape(-1)
+
         # for each window
         for session_id, data_dict in session_dict.items():
             feature_dict = defaultdict(list)
             windows = data_dict["windows"]
-
             # generate sequential feautres # sliding windows on logid list
             if self.feature_type == "sequentials":
                 feature_dict["sequentials"] = self.__windows2sequential(windows)
 
             # generate semantics feautres # use logid -> token id list
             if self.feature_type == "semantics":
-                feature_dict["semantics"] = self.__window2semantics(windows)
-
+                feature_dict["semantics"] = self.__window2semantics(windows, log2idx)
+            
             # generate quantitative feautres # count logid in each window
             if self.feature_type == "quantitatives":
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)

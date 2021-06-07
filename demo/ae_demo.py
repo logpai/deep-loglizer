@@ -8,7 +8,7 @@ import argparse
 from deeploglizer.models import AutoEncoder
 from deeploglizer.common.dataloader import load_sessions, log_dataset
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.utils import seed_everything, set_device, dump_params
+from deeploglizer.common.utils import seed_everything, dump_params, dump_final_results
 from torch.utils.data import DataLoader
 
 from IPython import embed
@@ -45,7 +45,7 @@ parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 
 ##### training params
-parser.add_argument("--epoches", default=100, type=int)
+parser.add_argument("--epoches", default=1, type=int)
 parser.add_argument("--learning_rate", default=0.001, type=float)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--anomaly_ratio", default=0.03, type=float)
@@ -60,7 +60,7 @@ parser.add_argument("--cache", default=False, type=bool)
 params = vars(parser.parse_args())
 
 pkl_dir = params["pkl_dir"]
-model_save_path, hash_id = dump_params(params)
+model_save_path = dump_params(params)
 
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
@@ -92,26 +92,4 @@ if __name__ == "__main__":
         learning_rate=params["learning_rate"],
     )
 
-    result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
-
-    key_info = [
-        "dataset",
-        "train_anomaly_ratio",
-        "feature_type",
-        "label_type",
-        "use_attention",
-    ]
-
-    args_str = "\t".join(
-        ["{}:{}".format(k, v) for k, v in params.items() if k in key_info]
-    )
-
-    with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
-        info = "{} AutoEncoder {} {} train: {:.3f} test: {:.3f}\n".format(
-            hash_id,
-            args_str,
-            result_str,
-            model.time_tracker["train"],
-            model.time_tracker["test"],
-        )
-        fw.write(info)
+    dump_final_results(params, eval_results, model)
