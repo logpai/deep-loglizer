@@ -66,7 +66,7 @@ class CNN(ForcastBasedModel):
         x = x.unsqueeze(1)
 
         x = [
-            F.relu(conv(x)).squeeze(3) for conv in self.convs
+            F.relu(conv(x.float())).squeeze(3) for conv in self.convs
         ]  # [(batch_size, hidden_size, seq_len), ...]*len(kernel_sizes)
         x = [
             F.max_pool1d(i, i.size(2)).squeeze(2) for i in x

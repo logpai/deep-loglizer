@@ -4,5 +4,5 @@
 # --num_layers 1
 
 # wo semantics
-python transformer_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_no_train_anomaly_8_2 --window_size 10 --feature_type semantics --use_tfidf
+python transformer_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_no_train_anomaly_8_2 --window_size 10 --feature_type semantics --use_tfidf B
 
