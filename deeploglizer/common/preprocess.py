@@ -343,24 +343,24 @@ class FeatureExtractor(BaseEstimator):
             log2idx["PADDING"] = np.zeros(indice.shape[1]).reshape(-1)
             logging.info("Extracting semantic features.")
         # for each window
+        logging.info("Mapping semantic features.")
+
         for session_id, data_dict in session_dict.items():
             feature_dict = defaultdict(list)
             windows = data_dict["windows"]
             # generate sequential feautres # sliding windows on logid list
             if self.feature_type == "sequentials":
                 feature_dict["sequentials"] = self.__windows2sequential(windows)
-
             # generate semantics feautres # use logid -> token id list
             if self.feature_type == "semantics":
-                logging.info("Mapping semantic features.")
                 feature_dict["semantics"] = self.__window2semantics(windows, log2idx)
-                logging.info("Mapping semantic features done.")
 
             # generate quantitative feautres # count logid in each window
             if self.feature_type == "quantitatives":
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
+        logging.info("Mapping semantic features done.")
 
         logging.info("Finish feature extraction ({}).".format(datatype))
         if self.cache:
