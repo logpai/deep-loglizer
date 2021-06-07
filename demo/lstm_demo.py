@@ -22,7 +22,9 @@ parser.add_argument("--feature_type", default="sequentials", type=str)
 parser.add_argument("--use_attention", action="store_true")
 parser.add_argument("--label_type", default="next_log", type=str)
 parser.add_argument("--use_tfidf", action="store_true")
-parser.add_argument("--pretrain_path", default=None, type=str)
+parser.add_argument(
+    "--pretrain_path", default="../data/pretrain/wiki-news-300d-1M.vec", type=str
+)
 ##################### fixed for Deeplog ↑ ####################
 
 ##### for semantics:
@@ -36,15 +38,15 @@ parser.add_argument("--num_directions", default=2, type=int)
 parser.add_argument("--embedding_dim", default=16, type=int)
 
 ##### dataset params
-parser.add_argument("--dataset", default="BGL", type=str)
-parser.add_argument(
-    "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
-)
-
-# parser.add_argument("--dataset", default="HDFS", type=str)
+# parser.add_argument("--dataset", default="BGL", type=str)
 # parser.add_argument(
-#     "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+#     "--pkl_dir", default="../data/processed/BGL/bgl_no_train_anomaly_8_2", type=str
 # )
+
+parser.add_argument("--dataset", default="HDFS", type=str)
+parser.add_argument(
+    "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
+)
 
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)

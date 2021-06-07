@@ -120,6 +120,7 @@ def load_BGL(
     with open(os.path.join(pkl_dir, "session_test.pkl"), "wb") as fw:
         pickle.dump(session_test, fw)
     json_pretty_dump(params, os.path.join(pkl_dir, "data_desc.json"))
+    print("Saved to {}".format(pkl_dir))
     return session_train, session_test
 
 

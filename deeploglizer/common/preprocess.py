@@ -294,6 +294,7 @@ class FeatureExtractor(BaseEstimator):
             self.meta_data["vocab_size"] = self.vocab.token_vocab_size
 
             if self.pretrain_path is not None:
+                logging.info("Using pretrain word embeddings from {}".format())
                 self.meta_data["pretrain_matrix"] = self.vocab.gen_pretrain_matrix(
                     self.pretrain_path
                 )
