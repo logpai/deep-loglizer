@@ -22,9 +22,9 @@ parser.add_argument("--feature_type", default="sequentials", type=str)
 parser.add_argument("--use_attention", action="store_true")
 parser.add_argument("--label_type", default="next_log", type=str)
 parser.add_argument("--use_tfidf", action="store_true")
-parser.add_argument(
-    "--pretrain_path", default="../data/pretrain/wiki-news-300d-1M.vec", type=str
-)
+# parser.add_argument(
+#     "--pretrain_path", default="../data/pretrain/wiki-news-300d-1M.vec", type=str
+# )
 ##################### fixed for Deeplog ↑ ####################
 
 ##### for semantics:
@@ -35,7 +35,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_layers", default=1, type=int)
 parser.add_argument("--num_directions", default=2, type=int)
-parser.add_argument("--embedding_dim", default=16, type=int)
+parser.add_argument("--embedding_dim", default=300, type=int)
 
 ##### dataset params
 # parser.add_argument("--dataset", default="BGL", type=str)

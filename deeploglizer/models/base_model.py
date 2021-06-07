@@ -22,7 +22,7 @@ class Embedder(nn.Module):
     ):
         super(Embedder, self).__init__()
         self.use_tfidf = use_tfidf
-        if pretrain_matrix:
+        if pretrain_matrix is not None:
             self.embedding_layer = nn.Embedding.from_pretrained(
                 pretrain_matrix, padding_idx=1, freeze=freeze
             )
@@ -35,7 +35,7 @@ class Embedder(nn.Module):
         if self.use_tfidf:
             return torch.matmul(x, self.embedding_layer.weight.double())
         else:
-            return self.embedding_layer(x)
+            return self.embedding_layer(x.long())
 
 
 class ForcastBasedModel(nn.Module):

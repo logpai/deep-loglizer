@@ -1,6 +1,7 @@
 import os
 import io
 import itertools
+import torch
 import numpy as np
 from collections import Counter, defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -14,10 +15,12 @@ import hashlib
 import pickle
 import re
 import logging
+from tqdm import tqdm
 from IPython import embed
 
 
 def load_vectors(fname):
+    logging.info("Loading vectors from {}.".format(fname))
     if fname.endswith("pkl"):
         with open(fname, "rb") as fr:
             data = pickle.load(fr)
@@ -26,11 +29,9 @@ def load_vectors(fname):
         fin = io.open(fname, "r", encoding="utf-8", newline="\n", errors="ignore")
         n, d = map(int, fin.readline().split())
         data = {}
-        for line in fin:
+        for line in fin.readlines()[0:1000]:
             tokens = line.rstrip().split(" ")
-            data[tokens[0]] = map(float, tokens[1:])
-    logging.info("Loading vectors from {} done.".format(fname))
-
+            data[tokens[0]] = np.array(list(map(float, tokens[1:])))
     return data
 
 
@@ -60,7 +61,7 @@ class Vocab:
         vocab_size = len(self.word2idx)
         pretrain_matrix = np.zeros([vocab_size, 300])
         oov_count = 0
-        for word, idx in self.word2idx.items():
+        for word, idx in tqdm(self.word2idx.items()):
             if word in word_vec_dict:
                 pretrain_matrix[idx] = word_vec_dict[word]
             else:
@@ -70,7 +71,7 @@ class Vocab:
                 vocab_size - oov_count, vocab_size
             )
         )
-        return pretrain_matrix
+        return torch.from_numpy(pretrain_matrix)
 
     def trp(self, l, n):
         """ Truncate or pad a list """
@@ -294,7 +295,9 @@ class FeatureExtractor(BaseEstimator):
             self.meta_data["vocab_size"] = self.vocab.token_vocab_size
 
             if self.pretrain_path is not None:
-                logging.info("Using pretrain word embeddings from {}".format())
+                logging.info(
+                    "Using pretrain word embeddings from {}".format(self.pretrain_path)
+                )
                 self.meta_data["pretrain_matrix"] = self.vocab.gen_pretrain_matrix(
                     self.pretrain_path
                 )
