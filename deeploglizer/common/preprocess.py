@@ -252,7 +252,7 @@ class FeatureExtractor(BaseEstimator):
         # input: raw windows
         # output: encoded token matrix,
         total_idx = [list(map(lambda x: log2idx[x], window)) for window in windows]
-        return np.vstack(total_idx)
+        return np.array(total_idx)
 
     def save(self):
         logging.info("Saving feature extractor to {}.".format(self.cache_dir))

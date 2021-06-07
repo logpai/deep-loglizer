@@ -33,7 +33,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 parser.add_argument("--hidden_size", default=200, type=int)
 parser.add_argument("--num_layers", default=1, type=int)
 parser.add_argument("--num_directions", default=2, type=int)
-parser.add_argument("--embedding_dim", default=1, type=int)
+parser.add_argument("--embedding_dim", default=16, type=int)
 
 ##### dataset params
 # parser.add_argument("--dataset", default="BGL", type=str)

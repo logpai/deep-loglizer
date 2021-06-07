@@ -98,10 +98,7 @@ class LSTM(ForcastBasedModel):
             y = input_dict["window_labels"].long().view(-1)
         self.batch_size = y.size()[0]
         x = input_dict["features"]
-        if self.embedding_dim == 1:
-            x = x.unsqueeze(-1)
-        else:
-            x = self.embedder(x)
+        x = self.embedder(x.long())
 
         if self.feature_type == "semantics":
             if not self.use_tfidf:
