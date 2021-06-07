@@ -30,8 +30,14 @@ def load_sessions(pkl_dir):
     with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
         session_test = pickle.load(fr)
 
-    train_labels = [v["label"] for k, v in session_train.items()]
-    test_labels = [v["label"] for k, v in session_test.items()]
+    train_labels = [
+        v["label"] if not isinstance(v["label"], list) else int(sum(v["label"]) > 0)
+        for _, v in session_train.items()
+    ]
+    test_labels = [
+        v["label"] if not isinstance(v["label"], list) else int(sum(v["label"]) > 0)
+        for _, v in session_test.items()
+    ]
 
     num_train = len(session_train)
     ratio_train = sum(train_labels) / num_train

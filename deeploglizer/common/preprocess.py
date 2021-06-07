@@ -10,13 +10,10 @@ from deeploglizer.common.utils import (
     dump_pickle,
     load_pickle,
 )
-from deeploglizer.common.injection import perturb_hdfs
 import hashlib
 import pickle
-import json
 import re
 import logging
-
 from IPython import embed
 
 
@@ -179,7 +176,7 @@ class FeatureExtractor(BaseEstimator):
                     window = templates[i : i + self.window_size]
                     next_log = self.log2id_train.get(templates[i + self.window_size], 1)
 
-                    if session_id == "all":
+                    if isinstance(data_dict["label"], list):
                         window_anomaly = int(
                             1 in data_dict["label"][i : i + self.window_size + 1]
                         )
@@ -195,7 +192,7 @@ class FeatureExtractor(BaseEstimator):
                     window.extend(["PADDING"] * (self.window_size - len(window)))
                     next_log = self.log2id_train.get(templates[-1], 1)
 
-                    if session_id == "all":
+                    if isinstance(data_dict["label"], list):
                         window_anomaly = int(1 in data_dict["label"][i:])
                     else:
                         window_anomaly = data_dict["label"]
@@ -203,12 +200,6 @@ class FeatureExtractor(BaseEstimator):
                     windows.append(window)
                     window_labels.append(next_log)
                     window_anomalies.append(window_anomaly)
-
-                # if self.deduplicate_windows:
-                #     logging.info("Deduplicating windows...")
-                #     windows, uidx = np.unique(windows, axis=0, return_index=True)
-                #     window_labels = np.array(window_labels)[uidx]
-                #     window_anomalies = np.array(window_anomalies)[uidx]
                 window_count += len(windows)
 
                 session_dict[session_id]["windows"] = windows

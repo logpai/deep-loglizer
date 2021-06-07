@@ -65,11 +65,13 @@ def load_BGL(
         if sessid not in session_dict:
             session_dict[sessid] = defaultdict(list)
         session_dict[sessid]["templates"].append(row[column_idx["EventTemplate"]])
-        session_dict[sessid]["labels"].append(row[column_idx["Label"]])
+        session_dict[sessid]["label"].append(
+            row[column_idx["Label"]]
+        )  # labeling for each log
 
-    for k, v in session_dict.items():
-        session_dict[k]["label"] = int(1 in v["labels"])
-        del session_dict[k]["labels"]
+    # labeling for each session
+    # for k, v in session_dict.items():
+    #     session_dict[k]["label"] = [int(1 in v["label"])]
 
     session_idx = list(range(len(session_dict)))
     # split data
@@ -95,16 +97,17 @@ def load_BGL(
     session_train = {
         k: session_dict[k]
         for k in session_id_train
-        if (session_dict[k]["label"] == 0)
-        or (session_dict[k]["label"] == 1 and decision(train_anomaly_ratio))
+        if (sum(session_dict[k]["label"]) == 0)
+        or (sum(session_dict[k]["label"]) > 0 and decision(train_anomaly_ratio))
     }
     session_test = {k: session_dict[k] for k in session_id_test}
 
-    session_labels_train = [v["label"] for k, v in session_train.items()]
-    session_labels_test = [v["label"] for k, v in session_test.items()]
-
-    print(len(session_labels_train))
-    print(len(session_labels_test))
+    session_labels_train = [
+        1 if sum(v["label"]) > 0 else 0 for _, v in session_train.items()
+    ]
+    session_labels_test = [
+        1 if sum(v["label"]) > 0 else 0 for _, v in session_test.items()
+    ]
 
     train_anomaly = 100 * sum(session_labels_train) / len(session_labels_train)
     test_anomaly = 100 * sum(session_labels_test) / len(session_labels_test)

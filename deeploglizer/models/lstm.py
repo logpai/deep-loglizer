@@ -104,7 +104,7 @@ class LSTM(ForcastBasedModel):
             if not self.use_tfidf:
                 x = x.sum(dim=-2)  # add tf-idf
 
-        outputs, hidden = self.rnn(x.float())
+        outputs, _ = self.rnn(x.float())
 
         if self.use_attention:
             representation = self.attn(outputs)
