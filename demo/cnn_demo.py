@@ -8,7 +8,7 @@ import argparse
 from deeploglizer.models import CNN
 from deeploglizer.common.dataloader import load_sessions, log_dataset
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.utils import seed_everything, set_device, dump_params
+from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 from torch.utils.data import DataLoader
 
 from IPython import embed
@@ -101,12 +101,4 @@ if __name__ == "__main__":
         ["{}:{}".format(k, v) for k, v in params.items() if k in key_info]
     )
 
-    with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
-        info = "{} CNN {} {} train: {:.3f} test: {:.3f}\n".format(
-            hash_id,
-            args_str,
-            result_str,
-            model.time_tracker["train"],
-            model.time_tracker["test"],
-        )
-        fw.write(info)
+    dump_final_results(params, eval_results, model)
