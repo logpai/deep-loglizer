@@ -337,8 +337,6 @@ class FeatureExtractor(BaseEstimator):
             log2idx = {log: indice[idx] for idx, log in enumerate(ulog)}
             log2idx["PADDING"] = np.zeros(indice.shape[1]).reshape(-1)
             logging.info("Extracting semantic features.")
-        # for each window
-        logging.info("Mapping semantic features.")
 
         for session_id, data_dict in session_dict.items():
             feature_dict = defaultdict(list)
