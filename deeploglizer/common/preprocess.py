@@ -286,6 +286,9 @@ class FeatureExtractor(BaseEstimator):
             self.meta_data["num_labels"] = len(self.log2id_train)
         elif self.label_type == "anomaly":
             self.meta_data["num_labels"] = 2
+        else:
+            logging.info('Unrecognized label type "{}"'.format(self.label_type))
+            exit()
 
         if self.feature_type == "semantics":
             logging.info("Using semantics.")
@@ -306,6 +309,10 @@ class FeatureExtractor(BaseEstimator):
 
         elif self.feature_type == "sequentials":
             self.meta_data["vocab_size"] = len(self.log2id_train)
+
+        else:
+            logging.info('Unrecognized feature type "{}"'.format(self.feature_type))
+            exit()
 
         if self.cache:
             self.save()
