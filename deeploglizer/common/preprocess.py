@@ -347,13 +347,11 @@ class FeatureExtractor(BaseEstimator):
             # generate semantics feautres # use logid -> token id list
             if self.feature_type == "semantics":
                 feature_dict["semantics"] = self.__window2semantics(windows, log2idx)
-
             # generate quantitative feautres # count logid in each window
             if self.feature_type == "quantitatives":
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
-        logging.info("Mapping semantic features done.")
 
         logging.info("Finish feature extraction ({}).".format(datatype))
         if self.cache:

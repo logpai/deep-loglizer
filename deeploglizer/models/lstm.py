@@ -15,6 +15,7 @@ class Attention(nn.Module):
 
     def forward(self, lstm_input):
         input_tensor = lstm_input.transpose(1, 0)  # f x b x d
+
         input_tensor = (
             torch.bmm(input_tensor, self.atten_w) + self.atten_bias
         )  # f x b x out
@@ -85,7 +86,7 @@ class LSTM(ForcastBasedModel):
         )
         if self.use_attention:
             assert window_size is not None, "window size must be set if use attention"
-            self.attn = Attention(hidden_size, window_size)
+            self.attn = Attention(hidden_size * num_directions, window_size)
         self.criterion = nn.CrossEntropyLoss()
         self.prediction_layer = nn.Linear(
             self.hidden_size * self.num_directions, num_labels

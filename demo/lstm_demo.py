@@ -48,6 +48,8 @@ parser.add_argument(
     "--pkl_dir", default="../data/processed/HDFS/hdfs_no_train_anomaly_8_2", type=str
 )
 
+# ../data/processed/HDFS/hdfs_1.0_train_anomaly_8_2/
+
 parser.add_argument("--window_size", default=10, type=int)
 parser.add_argument("--stride", default=1, type=int)
 

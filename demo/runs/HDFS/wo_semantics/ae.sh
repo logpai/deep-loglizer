@@ -8,3 +8,4 @@
 # wo semantics
 python ae_demo.py --dataset HDFS --pkl_dir ../data/processed/HDFS/hdfs_no_train_anomaly_8_2 --window_size 10 --anomaly_ratio 0.03 --gpu 1
 
+
