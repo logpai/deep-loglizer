@@ -22,13 +22,17 @@ from IPython import embed
 from deeploglizer.common.utils import decision
 
 
-def load_sessions(pkl_dir):
+def load_sessions(pkl_dir, perturb=None):
     with open(os.path.join(pkl_dir, "data_desc.json"), "r") as fr:
         data_desc = json.load(fr)
     with open(os.path.join(pkl_dir, "session_train.pkl"), "rb") as fr:
         session_train = pickle.load(fr)
-    with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
-        session_test = pickle.load(fr)
+    if perturb:
+        with open(os.path.join(pkl_dir, "session_test_perturbed_{}.pkl".format(perturb)), "rb") as fr:
+            session_test = pickle.load(fr)
+    else:
+        with open(os.path.join(pkl_dir, "session_test.pkl"), "rb") as fr:
+            session_test = pickle.load(fr)
 
     train_labels = [
         v["label"] if not isinstance(v["label"], list) else int(sum(v["label"]) > 0)

@@ -62,6 +62,7 @@ parser.add_argument("--topk", default=10, type=int)
 ##### Others
 parser.add_argument("--random_seed", default=42, type=int)
 parser.add_argument("--gpu", default=0, type=int)
+parser.add_argument("--perturb", default=0.05, type=float)
 
 params = vars(parser.parse_args())
 
@@ -71,7 +72,7 @@ model_save_path = dump_params(params)
 if __name__ == "__main__":
     seed_everything(params["random_seed"])
 
-    session_train, session_test = load_sessions(pkl_dir=pkl_dir)
+    session_train, session_test = load_sessions(pkl_dir=pkl_dir, perturb=params["perturb"])
 
     ext = FeatureExtractor(**params)
 
