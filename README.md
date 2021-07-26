@@ -1,4 +1,4 @@
-#Deep-loglizer
+# Deep-loglizer
 
 **Deep-loglizer is a deep learning-based log analysis toolkit for automated anomaly detection.**
 
@@ -7,12 +7,12 @@ If you use deep-loglizer in your research for publication, please kindly cite th
 - Chen, Zhuangbin, Jinyang Liu, Wenwei Gu, Yuxin Su, and Michael R. Lyu. [Experience Report: Deep Learning-based System Log Analysis for Anomaly Detection.](https://arxiv.org/abs/2107.05908) arXiv preprint arXiv:2107.05908 (2021).
 
 
-#Framework
+## Framework
 
 ![Deep Learning-based Log Anomaly Detection](./imgs/log_ad.jpg)
 
 
-#Models
+## Models
 
 | Model | Paper reference |
 | :--- | :--- |
@@ -33,7 +33,7 @@ cd deep-loglizer
 pip install -r requirements.txt
 ```
 
-#Contributors
+## Contributors
 
 - [Zhuangbin Chen](http://www.cse.cuhk.edu.hk/~zbchen), The Chinese University of Hong Kong
 - [Jinyang Liu](http://www.cse.cuhk.edu.hk/~jyliu), The Chinese University of Hong Kong
