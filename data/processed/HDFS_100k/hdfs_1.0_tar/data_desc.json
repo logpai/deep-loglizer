@@ -1,0 +1,7 @@
+{
+    "label_file": "../data/HDFS/anomaly_label.csv",
+    "log_file": "../data/HDFS/HDFS_100k.log_structured.csv",
+    "random_sessions": true,
+    "test_ratio": 0.2,
+    "train_anomaly_ratio": 1.0
+}
