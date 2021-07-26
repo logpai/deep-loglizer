@@ -6,16 +6,17 @@ import numpy as np
 from collections import Counter, defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.base import BaseEstimator
-from deeploglizer.common.utils import (
-    json_pretty_dump,
-    dump_pickle,
-    load_pickle,
-)
 import hashlib
 import pickle
 import re
 import logging
 from tqdm import tqdm
+
+from deeploglizer.common.utils import (
+    json_pretty_dump,
+    dump_pickle,
+    load_pickle,
+)
 
 
 def load_vectors(fname):

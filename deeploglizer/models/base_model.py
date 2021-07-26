@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 from torch import nn
 from collections import defaultdict
-from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
+
+from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
 
 class Embedder(nn.Module):

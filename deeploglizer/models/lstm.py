@@ -1,6 +1,7 @@
 import math
 import torch
 from torch import nn
+
 from deeploglizer.models import ForcastBasedModel
 
 

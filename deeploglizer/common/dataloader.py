@@ -14,11 +14,9 @@ import numpy as np
 import re
 import pickle
 import json
-from sklearn.utils import shuffle
 from collections import OrderedDict, defaultdict
-from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
-from IPython import embed
+
 from deeploglizer.common.utils import decision
 
 
