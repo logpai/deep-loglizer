@@ -1,4 +1,5 @@
 #Deep-loglizer
+
 **Deep-loglizer is a deep learning-based log analysis toolkit for automated anomaly detection.**
 
 If you use deep-loglizer in your research for publication, please kindly cite the following paper:
@@ -7,10 +8,12 @@ If you use deep-loglizer in your research for publication, please kindly cite th
 
 
 #Framework
+
 ![Deep Learning-based Log Anomaly Detection](./imgs/log_ad.jpg)
 
 
 #Models
+
 | Model | Paper reference |
 | :--- | :--- |
 | **Unsupervised models** | |
@@ -23,6 +26,7 @@ If you use deep-loglizer in your research for publication, please kindly cite th
 | CNN | [DASC'18] [Detecting anomaly in big data system logs using convolutional neural network](https://ieeexplore.ieee.org/document/8511880) by Siyang Lu, Xiang Wei, Yandong Li, and Liqiang Wang. [University of Central Florida] |
 
 ## Install
+
 ```bash
 git clone https://github.com/logpai/deep-loglizer.git
 cd deep-loglizer
@@ -30,5 +34,6 @@ pip install -r requirements.txt
 ```
 
 #Contributors
+
 - [Zhuangbin Chen](http://www.cse.cuhk.edu.hk/~zbchen), The Chinese University of Hong Kong
 - [Jinyang Liu](http://www.cse.cuhk.edu.hk/~jyliu), The Chinese University of Hong Kong
