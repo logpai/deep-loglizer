@@ -37,3 +37,4 @@ pip install -r requirements.txt
 
 - [Zhuangbin Chen](http://www.cse.cuhk.edu.hk/~zbchen), The Chinese University of Hong Kong
 - [Jinyang Liu](http://www.cse.cuhk.edu.hk/~jyliu), The Chinese University of Hong Kong
+- Wenwei Gu, The Chinese University of Hong Kong
