@@ -4,7 +4,7 @@
 
 If you use deep-loglizer in your research for publication, please kindly cite the following paper:
 
-- Zhuangbin Chen, Jinyang Liu, Wenwei Gu, Yuxin Su, and Michael R. Lyu. [Experience Report: Deep Learning-based System Log Analysis for Anomaly Detection.](https://arxiv.org/abs/2107.05908) arXiv preprint arXiv:2107.05908 (2021).
+- Zhuangbin Chen, Jinyang Liu, Wenwei Gu, Yuxin Su, and Michael R. Lyu. [Experience Report: Deep Learning-based System Log Analysis for Anomaly Detection.](https://arxiv.org/abs/2107.05908) arXiv preprint, arXiv:2107.05908 (2021).
 
 
 ## Framework
