@@ -79,7 +79,7 @@ class Vocab:
         """ Truncate or pad a list """
         r = l[:n]
         if len(r) < n:
-            r.extend(list([1]) * (n - len(r)))
+            r.extend(list([0]) * (n - len(r)))
         return r
 
     def build_vocab(self, logs):
@@ -218,7 +218,7 @@ class FeatureExtractor(BaseEstimator):
                     )
 
             elif self.window_type == "session":
-                session_dict[session_id]["windows"] = data_dict["templates"]
+                session_dict[session_id]["windows"] = [data_dict["templates"]]
                 session_dict[session_id]["window_labels"] = [data_dict["label"]]
                 window_count += 1
 
