@@ -9,7 +9,7 @@ If you use deep-loglizer in your research for publication, please kindly cite th
 
 ## Framework
 
-![Deep Learning-based Log Anomaly Detection](./imgs/log_ad.jpg)
+![Deep Learning-based Log Anomaly Detection](./docs/log_ad.jpg)
 
 
 ## Models
