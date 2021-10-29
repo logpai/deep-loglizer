@@ -17,7 +17,7 @@ If you use deep-loglizer in your research for publication, please kindly cite th
 | Model | Paper reference |
 | :--- | :--- |
 | **Unsupervised models** | |
-| LSTM | [CSS'17] [Deeplog: Anomaly detection and diagnosis from system logs through deep learning](https://dl.acm.org/doi/abs/10.1145/3133956.3134015), by Min Du, Feifei Li, Guineng Zheng, and Vivek Srikumar. [University of Utah] |
+| LSTM | [CCS'17] [Deeplog: Anomaly detection and diagnosis from system logs through deep learning](https://dl.acm.org/doi/abs/10.1145/3133956.3134015), by Min Du, Feifei Li, Guineng Zheng, and Vivek Srikumar. [University of Utah] |
 | LSTM | [IJCAI'19] [LogAnomaly: unsupervised detection of sequential and quantitative anomalies in unstructured logs](https://www.ijcai.org/proceedings/2019/658) by Weibin Meng, Ying Liu, Yichen Zhu et al. [Tsinghua University] |
 | Transformer | [ICDM'20] [Self-attentive classification-based anomaly detection in unstructured logs](https://ieeexplore.ieee.org/document/9338283), by Sasho Nedelkoski, Jasmin Bogatinovski, Alexander Acker, Jorge Cardoso, and Odej Kao. [TU Berlin] |
 | Autoencoder | [ICT Express'20] [Unsupervised log message anomaly detection](https://www.sciencedirect.com/science/article/pii/S2405959520300643), by Amir Farzad and T Aaron Gulliver. [University of Victoria] |
