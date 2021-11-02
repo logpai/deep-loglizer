@@ -15,12 +15,26 @@ import re
 import pickle
 import json
 from collections import OrderedDict, defaultdict
+from typing import Tuple
 from torch.utils.data import Dataset
 
 from deeploglizer.common.utils import decision
 
 
-def load_sessions(data_dir):
+def load_sessions(data_dir:str) -> Tuple[dict, dict]:
+    """ load sessions from a data directory
+
+        expects data_desc.json, session_train.pkl and session_test.pkl
+
+        each returned session_[train/test] object has the following structure:
+
+        Dict[session_key: SessionDict]
+
+        SessionDict: PreProcessedObject with keys:
+                    label :int: `1`` if anomaly, else ``0`` 
+                    templates: Sequential List of logkey templates in each session.
+
+    """
     with open(os.path.join(data_dir, "data_desc.json"), "r") as fr:
         data_desc = json.load(fr)
     with open(os.path.join(data_dir, "session_train.pkl"), "rb") as fr:
@@ -47,11 +61,14 @@ def load_sessions(data_dir):
         "# train sessions {} ({:.2f} anomalies)".format(num_train, ratio_train)
     )
     logging.info("# test sessions {} ({:.2f} anomalies)".format(num_test, ratio_test))
+
     return session_train, session_test
 
 
-class log_dataset(Dataset):
-    def __init__(self, session_dict, feature_type="semantics"):
+class LogDataset(Dataset):
+    """ Builds pytorch datasets by only extracting needed features
+    """
+    def __init__(self, session_dict:dict, feature_type="semantics"):
         flatten_data_list = []
         # flatten all sessions
         for session_idx, data_dict in enumerate(session_dict.values()):

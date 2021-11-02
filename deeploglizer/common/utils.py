@@ -8,10 +8,18 @@ import pickle
 import random
 import hashlib
 import logging
+from pathlib import Path
 from datetime import datetime
+from typing import Any
 
+def dump_final_results(params:dict, eval_results:dict, model:Any) -> None:
+    """ dump a txt file with information about results
 
-def dump_final_results(params, eval_results, model):
+        model :  ForecastBasedModel object
+    """
+
+    storage_path = Path('.') / 'experiment_records'
+
     result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
 
     key_info = [
@@ -33,7 +41,9 @@ def dump_final_results(params, eval_results, model):
 
     params_str = "\t".join(input_params + recorded_params)
 
-    with open(os.path.join(f"{params['dataset']}.txt"), "a+") as fw:
+    storage_path = storage_path / os.path.join(f"{params['dataset']}.txt")
+
+    with open(storage_path, "a+") as fw:
         info = "{} {} {} {} {} train: {:.3f} test: {:.3f}\n".format(
             datetime.now().strftime("%Y%m%d-%H%M%S"),
             params["hash_id"],
@@ -45,8 +55,9 @@ def dump_final_results(params, eval_results, model):
         )
         fw.write(info)
 
+    return
 
-def dump_params(params):
+def dump_params(params:dict) -> str:
     hash_id = hashlib.md5(
         str(sorted([(k, v) for k, v in params.items()])).encode("utf-8")
     ).hexdigest()[0:8]
@@ -71,7 +82,7 @@ def dump_params(params):
     return save_dir
 
 
-def decision(probability):
+def decision(probability:float) -> bool:
     return random.random() < probability
 
 
@@ -91,14 +102,20 @@ def tensor2flatten_arr(tensor):
     return tensor.data.cpu().numpy().reshape(-1)
 
 
-def seed_everything(seed=1234):
+def seed_everything(seed:int=1234) -> None:
+    """ set random number chains for the process
+    """
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
 
+    return
 
-def set_device(gpu=-1):
+
+def set_device(gpu:int=-1) -> torch.device:
+    """ If you run .device("cuda"), your tensor will be routed to the CUDA current device, which by default is the 0 device.
+    """
     if gpu != -1 and torch.cuda.is_available():
         device = torch.device("cuda:" + str(gpu))
     else:
@@ -106,13 +123,14 @@ def set_device(gpu=-1):
     return device
 
 
-def dump_pickle(obj, file_path):
+def dump_pickle(obj:Any, file_path:str) -> None:
     logging.info("Dumping to {}".format(file_path))
     with open(file_path, "wb") as fw:
         pickle.dump(obj, fw)
+    return
 
 
-def load_pickle(file_path):
+def load_pickle(file_path:str):
     logging.info("Loading from {}".format(file_path))
     with open(file_path, "rb") as fr:
         return pickle.load(fr)

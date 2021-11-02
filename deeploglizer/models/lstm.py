@@ -1,8 +1,9 @@
+from typing import Dict, Optional
 import math
 import torch
 from torch import nn
 
-from deeploglizer.models import ForcastBasedModel
+from deeploglizer.models import ForecastBasedModel
 
 
 class Attention(nn.Module):
@@ -36,26 +37,27 @@ class Attention(nn.Module):
             tensor.data.fill_(0)
 
 
-class LSTM(ForcastBasedModel):
+class LSTM(ForecastBasedModel):
     def __init__(
         self,
-        meta_data,
-        hidden_size=100,
-        num_directions=2,
-        num_layers=1,
-        window_size=None,
-        use_attention=False,
-        embedding_dim=16,
-        model_save_path="./lstm_models",
-        feature_type="sequentials",
-        label_type="next_log",
-        eval_type="session",
-        topk=5,
-        use_tfidf=False,
-        freeze=False,
-        gpu=-1,
+        meta_data:str,
+        hidden_size:int=100,
+        num_directions:int=2,
+        num_layers:int=1,
+        window_size:Optional[int]=None,
+        use_attention:bool=False,
+        embedding_dim:int=16,
+        model_save_path:str="./lstm_models",
+        feature_type:str="sequentials",
+        label_type:str="next_log",
+        eval_type:str="session",
+        topk:int=5,
+        use_tfidf:bool=False,
+        freeze:bool=False,
+        gpu:int=-1,
         **kwargs
     ):
+
         super().__init__(
             meta_data=meta_data,
             model_save_path=model_save_path,
@@ -68,6 +70,7 @@ class LSTM(ForcastBasedModel):
             freeze=freeze,
             gpu=gpu,
         )
+
         num_labels = meta_data["num_labels"]
         self.feature_type = feature_type
         self.label_type = label_type
@@ -77,22 +80,26 @@ class LSTM(ForcastBasedModel):
         self.use_attention = use_attention
         self.use_tfidf = use_tfidf
         self.embedding_dim = embedding_dim
-        self.rnn = nn.LSTM(
+
+        self.lstm = nn.LSTM(
             input_size=embedding_dim,
             hidden_size=self.hidden_size,
             batch_first=True,
             num_layers=num_layers,
             bidirectional=(self.num_directions == 2),
         )
+        
         if self.use_attention:
             assert window_size is not None, "window size must be set if use attention"
             self.attn = Attention(hidden_size * num_directions, window_size)
+
         self.criterion = nn.CrossEntropyLoss()
+
         self.prediction_layer = nn.Linear(
             self.hidden_size * self.num_directions, num_labels
         )
 
-    def forward(self, input_dict):
+    def forward(self, input_dict:dict) -> Dict[str, float]:
         if self.label_type == "anomaly":
             y = input_dict["window_anomalies"].long().view(-1)
         elif self.label_type == "next_log":
@@ -105,7 +112,7 @@ class LSTM(ForcastBasedModel):
             if not self.use_tfidf:
                 x = x.sum(dim=-2)  # add tf-idf
 
-        outputs, _ = self.rnn(x.float())
+        outputs, _ = self.lstm(x.float())
 
         if self.use_attention:
             representation = self.attn(outputs)
@@ -117,4 +124,5 @@ class LSTM(ForcastBasedModel):
         y_pred = logits.softmax(dim=-1)
         loss = self.criterion(logits, y)
         return_dict = {"loss": loss, "y_pred": y_pred}
+        
         return return_dict
