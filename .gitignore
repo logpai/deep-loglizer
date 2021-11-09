@@ -1,5 +1,6 @@
 .vscode
-experiment_records
+data/
+experiment_records/
 *.code-workspace
 
 # Byte-compiled / optimized / DLL files
