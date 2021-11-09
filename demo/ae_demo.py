@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from deeploglizer.models import AutoEncoder
 from deeploglizer.common.preprocess import FeatureExtractor
-from deeploglizer.common.dataloader import load_sessions, log_dataset
+from deeploglizer.common.dataloader import load_sessions, LogDataset
 from deeploglizer.common.utils import seed_everything, dump_params, dump_final_results
 
 
@@ -65,12 +65,12 @@ if __name__ == "__main__":
     session_train = ext.fit_transform(session_train)
     session_test = ext.transform(session_test, datatype="test")
 
-    dataset_train = log_dataset(session_train, feature_type=params["feature_type"])
+    dataset_train = LogDataset(session_train, feature_type=params["feature_type"])
     dataloader_train = DataLoader(
         dataset_train, batch_size=params["batch_size"], shuffle=True, pin_memory=True
     )
 
-    dataset_test = log_dataset(session_test, feature_type=params["feature_type"])
+    dataset_test = LogDataset(session_test, feature_type=params["feature_type"])
     dataloader_test = DataLoader(
         dataset_test, batch_size=4096, shuffle=False, pin_memory=True
     )

@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from utils import decision, json_pretty_dump
 from collections import OrderedDict, defaultdict
-
+from typing import Tuple, Optional
 
 seed = 42
 np.random.seed(seed)
@@ -36,11 +36,11 @@ os.makedirs(data_dir, exist_ok=True)
 def preprocess_hdfs(
     log_file,
     label_file,
-    test_ratio=None,
-    train_anomaly_ratio=1,
-    random_sessions=False,
+    test_ratio:Optional[float]=None,
+    train_anomaly_ratio:float=1,
+    random_sessions:bool=False,
     **kwargs
-):
+) -> Tuple[dict, dict]:
     """Load HDFS structured log into train and test data
 
     Arguments

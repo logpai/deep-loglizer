@@ -2,10 +2,10 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from deeploglizer.models import ForcastBasedModel
+from deeploglizer.models import ForecastBasedModel
 
 
-class CNN(ForcastBasedModel):
+class CNN(ForecastBasedModel):
     def __init__(
         self,
         meta_data,

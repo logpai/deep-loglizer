@@ -1,10 +1,10 @@
 import torch
 from torch import nn
 
-from deeploglizer.models import ForcastBasedModel
+from deeploglizer.models import ForecastBasedModel
 
 
-class Transformer(ForcastBasedModel):
+class Transformer(ForecastBasedModel):
     def __init__(
         self,
         meta_data,

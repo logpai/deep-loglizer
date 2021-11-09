@@ -38,7 +38,7 @@ class Embedder(nn.Module):
             return self.embedding_layer(x.long())
 
 
-class ForcastBasedModel(nn.Module):
+class ForecastBasedModel(nn.Module):
     def __init__(
         self,
         meta_data,
@@ -55,7 +55,7 @@ class ForcastBasedModel(nn.Module):
         patience=3,
         **kwargs,
     ):
-        super(ForcastBasedModel, self).__init__()
+        super(ForecastBasedModel, self).__init__()
         self.device = set_device(gpu)
         self.topk = topk
         self.meta_data = meta_data

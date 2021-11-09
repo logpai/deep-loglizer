@@ -1,3 +1,7 @@
+.vscode
+experiment_records
+*.code-workspace
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

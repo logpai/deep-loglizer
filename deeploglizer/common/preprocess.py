@@ -122,9 +122,15 @@ class Vocab:
 
 class FeatureExtractor(BaseEstimator):
     """
+
+    Compute features in provided data.
+    Implements fit and transform methods on top of scikit-learn BaseEstimator
+
+    label_type: 'none', 'next_log', 'anomaly'
     feature_type: "sequentials", "semantics", "quantitatives"
     window_type: "session", "sliding"
     max_token_len: only used for semantics features
+
     """
 
     def __init__(
@@ -265,7 +271,7 @@ class FeatureExtractor(BaseEstimator):
             logging.info("Cannot load cached feature extractor.")
             return False
 
-    def fit(self, session_dict):
+    def fit(self, session_dict:dict):
         if self.load():
             return
         log_padding = "<pad>"
@@ -282,7 +288,7 @@ class FeatureExtractor(BaseEstimator):
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
 
-        logging.info("{} tempaltes are found.".format(len(self.log2id_train)))
+        logging.info("{} templates are found.".format(len(self.log2id_train)))
 
         if self.label_type == "next_log":
             self.meta_data["num_labels"] = len(self.log2id_train)
@@ -319,7 +325,10 @@ class FeatureExtractor(BaseEstimator):
         if self.cache:
             self.save()
 
-    def transform(self, session_dict, datatype="train"):
+    def transform(self, session_dict:dict, datatype="train") -> dict:
+        """ Extract features
+        """
+        
         logging.info("Transforming {} data.".format(datatype))
         ulog = set(itertools.chain(*[v["templates"] for k, v in session_dict.items()]))
         if datatype == "test":
@@ -350,15 +359,15 @@ class FeatureExtractor(BaseEstimator):
         for session_id, data_dict in session_dict.items():
             feature_dict = defaultdict(list)
             windows = data_dict["windows"]
-            # generate sequential feautres # sliding windows on logid list
+            # generate sequential features # sliding windows on logid list
             if self.feature_type == "sequentials":
                 feature_dict["sequentials"] = self.__windows2sequential(windows)
 
-            # generate semantics feautres # use logid -> token id list
+            # generate semantics features # use logid -> token id list
             if self.feature_type == "semantics":
                 feature_dict["semantics"] = self.__window2semantics(windows, log2idx)
 
-            # generate quantitative feautres # count logid in each window
+            # generate quantitative features # count logid in each window
             if self.feature_type == "quantitatives":
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
@@ -369,6 +378,6 @@ class FeatureExtractor(BaseEstimator):
             dump_pickle(session_dict, cached_file)
         return session_dict
 
-    def fit_transform(self, session_dict):
+    def fit_transform(self, session_dict:dict) -> dict:
         self.fit(session_dict)
         return self.transform(session_dict, datatype="train")
