@@ -8,7 +8,7 @@ setup(
     author="LOGPAI",
     author_email="info@logpai.com",
     install_requires=['pandas', 'torch>=1.10', 'tqdm', 'numpy', 'scikit-learn'],
-    packages=['deeploglizer'],
+    packages=['deeploglizer', 'deeploglizer.models', 'deeploglizer.common'],
     python_requires=">=3.8",
     zip_safe=False,
 )
