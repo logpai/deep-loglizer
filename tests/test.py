@@ -1,6 +1,6 @@
-from runner.lstm_runner import run_lstm
+from demo.lstm_demo import main as run_lstm
 
-def test_lstm_on_hdfs():
+def test_unsup_lstm_on_hdfs():
 
     params = {
 
@@ -12,7 +12,7 @@ def test_lstm_on_hdfs():
         "num_directions": 1, # they had 2
         "embedding_dim": 32,
         "feature_type": "sequentials",
-        "label_type": "anomaly",
+        "label_type": "next_log", # to test the unsup model
         "use_tfidf": False,
         "topk": 10,
         "freeze": False,
@@ -28,7 +28,7 @@ def test_lstm_on_hdfs():
         "min_token_count": 1,
 
         # training parameters
-        "epoches": 100, 
+        "epochs": 100, 
         "batch_size": 1024,
         "learning_rate": 0.01, # using Adam
         "patience": 3, # for early stop
@@ -40,10 +40,12 @@ def test_lstm_on_hdfs():
 
     out = run_lstm(params)
 
+    print(out)
+
     assert out
-    assert out['f1'] > 0.67
-    assert out['f1'] < 0.71
+    assert out["f1"] > 0.1
+    assert out["f1"] < 0.21
 
 if __name__ == "__main__":
 
-    test_lstm_on_hdfs()
+    test_unsup_lstm_on_hdfs()

@@ -10,12 +10,11 @@ import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 def dump_final_results(params:dict, eval_results:dict, model:Any) -> None:
-    """ dump a txt file with information about results
-
-        model :  ForecastBasedModel object
+    """ Logs the run results to a text file which may contain other runs results.
+        File is a group bydataset variable in params
     """
 
     storage_path = Path('.') / 'experiment_records'
@@ -78,7 +77,7 @@ def dump_params(params:dict) -> str:
         handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
     )
 
-    logging.info(json.dumps(params, indent=4))
+    logging.debug(json.dumps(params, indent=4))
     return save_dir
 
 
@@ -86,7 +85,7 @@ def decision(probability:float) -> bool:
     return random.random() < probability
 
 
-def json_pretty_dump(obj, filename):
+def json_pretty_dump(obj, filename:Union[str, Path]):
     with open(filename, "w") as fw:
         json.dump(
             obj,

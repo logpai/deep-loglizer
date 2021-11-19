@@ -4,6 +4,7 @@
 import sys
 sys.path.append("../")
 import argparse
+import logging
 from torch.utils.data import DataLoader
 
 from deeploglizer.models import CNN
@@ -11,6 +12,8 @@ from deeploglizer.common.dataloader import load_sessions, LogDataset
 from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 
+logger = logging.getLogger("deeploglizer")
+logger.setLevel(level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 
@@ -41,7 +44,7 @@ parser.add_argument("--min_token_count", default=1, type=int)
 # )
 
 ##### Training params
-parser.add_argument("--epoches", default=100, type=int)
+parser.add_argument("--epochs", default=100, type=int)
 parser.add_argument("--batch_size", default=1024, type=int)
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--patience", default=3, type=int)
@@ -78,7 +81,7 @@ if __name__ == "__main__":
     eval_results = model.fit(
         dataloader_train,
         test_loader=dataloader_test,
-        epoches=params["epoches"],
+        epochs=params["epochs"],
         learning_rate=params["learning_rate"],
     )
 
