@@ -5,14 +5,16 @@ import torch
 import logging
 import numpy as np
 import pandas as pd
+from typing import List
 from torch import nn
 from torch.utils.data import DataLoader
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
-from typing import Optional
+from typing import Optional, Dict
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
 logger = logging.getLogger("deeploglizer")
+
 
 class Embedder(nn.Module):
     def __init__(
@@ -80,10 +82,21 @@ class ForecastBasedModel(nn.Module):
                 use_tfidf=use_tfidf,
             )
         else:
-            logger.info(f'Unrecognized feature type, except sequentials or semantics, got {feature_type}')
+            logger.info(
+                f"Unrecognized feature type, except sequentials or semantics, got {feature_type}"
+            )
 
-    def evaluate(self, test_loader:DataLoader, dtype:str="test") -> Optional[dict]:
+    def evaluate(
+        self,
+        test_loader: DataLoader,
+        dtype: str = "test",
+        extra_evaluation_functions: Optional[List[dict]] = None,
+    ) -> Optional[Dict[str, str]]:
+
         logger.info("Evaluating {} data.".format(dtype))
+
+        self.extra_evaluation_functions = extra_evaluation_functions
+        # List of {'name':name, 'func':func, 'zero_division': zero_division [Optional]}
 
         if self.label_type == "next_log":
             return self.__evaluate_next_log(test_loader, dtype=dtype)
@@ -92,7 +105,7 @@ class ForecastBasedModel(nn.Module):
         elif self.label_type == "none":
             return self.__evaluate_recst(test_loader, dtype=dtype)
 
-    def __evaluate_recst(self, test_loader:DataLoader, dtype:str="test") -> dict:
+    def __evaluate_recst(self, test_loader: DataLoader, dtype: str = "test") -> dict:
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -138,7 +151,7 @@ class ForecastBasedModel(nn.Module):
             logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_anomaly(self, test_loader:DataLoader, dtype:str="test") -> dict:
+    def __evaluate_anomaly(self, test_loader: DataLoader, dtype: str = "test") -> dict:
 
         self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -174,7 +187,10 @@ class ForecastBasedModel(nn.Module):
             logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_next_log(self, test_loader:DataLoader, dtype:str="test") -> Optional[dict]:
+    def __evaluate_next_log(
+        self, test_loader: DataLoader, dtype: str = "test"
+    ) -> Optional[dict]:
+    
         model = self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -245,12 +261,22 @@ class ForecastBasedModel(nn.Module):
                 pred = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int)
                 y = (session_df["window_anomalies"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomalies"].sum() / len(store_df)
+
                 eval_results = {
                     "f1": f1_score(y, pred),
                     "rc": recall_score(y, pred, zero_division=0),
                     "pc": precision_score(y, pred, zero_division=1),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
+
+                if self.extra_evaluation_functions:
+                    for evalfn in self.extra_evaluation_functions:
+                        try:
+                            kwargs = {"zero_division": evalfn["zero_division"]}
+                        except KeyError:
+                            kwargs = {}
+                        eval_results[evalfn["name"]] = evalfn["func"](y, pred, **kwargs)
+
                 logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
                 if eval_results["f1"] >= best_f1:
                     best_result = eval_results
@@ -262,7 +288,7 @@ class ForecastBasedModel(nn.Module):
     def __input2device(self, batch_input) -> dict:
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
-    def save_model(self):
+    def save_model(self) -> None:
         logger.info("Saving model to {}".format(self.model_save_file))
         try:
             torch.save(
@@ -273,15 +299,23 @@ class ForecastBasedModel(nn.Module):
         except:
             torch.save(self.state_dict(), self.model_save_file)
 
-    def load_model(self, model_save_file:str=""):
+    def load_model(self, model_save_file: str = "") -> None:
+        """Loads model from a file into memory"""
         logger.info("Loading model from {}".format(self.model_save_file))
         self.load_state_dict(torch.load(model_save_file, map_location=self.device))
 
-    def fit(self, train_loader:DataLoader, test_loader:Optional[DataLoader]=None, epochs:int=10, learning_rate:float=1.0e-3) -> Optional[dict]:
-        """ fits model on data
-            performs early stop based on test-f1 score
-            returns dict with best results metrics
+    def fit(
+        self,
+        train_loader: DataLoader,
+        test_loader: Optional[DataLoader] = None,
+        epochs: int = 10,
+        learning_rate: float = 1.0e-3,
+    ) -> Optional[dict]:
+        """fits model on data
+        performs early stop based on test-f1 score
+        returns dict with best results metrics
         """
+
         self.to(self.device)
         logger.info(
             "Start training on {} batches with {}.".format(
@@ -308,7 +342,9 @@ class ForecastBasedModel(nn.Module):
             epoch_loss = epoch_loss / batch_cnt
             epoch_time_elapsed = time.time() - epoch_time_start
             logger.info(
-                "Epoch {}/{}, training loss: {:.5f} [{:.2f}s]".format(epoch, epochs, epoch_loss, epoch_time_elapsed)
+                "Epoch {}/{}, training loss: {:.5f} [{:.2f}s]".format(
+                    epoch, epochs, epoch_loss, epoch_time_elapsed
+                )
             )
             self.time_tracker["train"] = epoch_time_elapsed
 
@@ -326,5 +362,5 @@ class ForecastBasedModel(nn.Module):
                         logger.info("Early stop at epoch: {}".format(epoch))
                         break
 
-        self.load_model(self.model_save_file)
+        # self.load_model(self.model_save_file)
         return best_results

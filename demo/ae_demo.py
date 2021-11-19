@@ -4,6 +4,7 @@
 import sys
 sys.path.append("../")
 import argparse
+import logging
 from torch.utils.data import DataLoader
 
 from deeploglizer.models import AutoEncoder
@@ -11,6 +12,8 @@ from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.dataloader import load_sessions, LogDataset
 from deeploglizer.common.utils import seed_everything, dump_params, dump_final_results
 
+logger = logging.getLogger("deeploglizer")
+logger.setLevel(level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 
