@@ -40,7 +40,7 @@ class Attention(nn.Module):
 class LSTM(ForecastBasedModel):
     def __init__(
         self,
-        meta_data:str,
+        meta_data:dict,
         hidden_size:int=100,
         num_directions:int=2,
         num_layers:int=1,
@@ -69,6 +69,7 @@ class LSTM(ForecastBasedModel):
             embedding_dim=embedding_dim,
             freeze=freeze,
             gpu=gpu,
+            **kwargs
         )
 
         num_labels = meta_data["num_labels"]

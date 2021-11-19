@@ -78,7 +78,7 @@ def dump_params(params:dict) -> str:
         handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
     )
 
-    logging.info(json.dumps(params, indent=4))
+    logging.debug(json.dumps(params, indent=4))
     return save_dir
 
 

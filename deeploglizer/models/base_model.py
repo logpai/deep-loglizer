@@ -1,3 +1,4 @@
+from argparse import OPTIONAL
 import os
 import time
 import torch
@@ -7,7 +8,7 @@ import pandas as pd
 from torch import nn
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
-
+from typing import Optional
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
 
@@ -79,7 +80,7 @@ class ForecastBasedModel(nn.Module):
         else:
             logging.info(f'Unrecognized feature type, except sequentials or semantics, got {feature_type}')
 
-    def evaluate(self, test_loader, dtype="test"):
+    def evaluate(self, test_loader, dtype:str="test") -> Optional[dict]:
         logging.info("Evaluating {} data.".format(dtype))
 
         if self.label_type == "next_log":
@@ -89,7 +90,7 @@ class ForecastBasedModel(nn.Module):
         elif self.label_type == "none":
             return self.__evaluate_recst(test_loader, dtype=dtype)
 
-    def __evaluate_recst(self, test_loader, dtype="test"):
+    def __evaluate_recst(self, test_loader, dtype:str="test") -> dict:
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -135,7 +136,7 @@ class ForecastBasedModel(nn.Module):
             logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_anomaly(self, test_loader, dtype="test"):
+    def __evaluate_anomaly(self, test_loader, dtype:str="test") -> dict:
 
         self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -171,7 +172,7 @@ class ForecastBasedModel(nn.Module):
             logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_next_log(self, test_loader, dtype="test"):
+    def __evaluate_next_log(self, test_loader, dtype:str="test") -> Optional[dict]:
         model = self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -244,8 +245,8 @@ class ForecastBasedModel(nn.Module):
                 window_topk_acc = 1 - store_df["window_anomalies"].sum() / len(store_df)
                 eval_results = {
                     "f1": f1_score(y, pred),
-                    "rc": recall_score(y, pred),
-                    "pc": precision_score(y, pred),
+                    "rc": recall_score(y, pred, zero_division=0),
+                    "pc": precision_score(y, pred, zero_division=1),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
                 logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
@@ -274,7 +275,11 @@ class ForecastBasedModel(nn.Module):
         logging.info("Loading model from {}".format(self.model_save_file))
         self.load_state_dict(torch.load(model_save_file, map_location=self.device))
 
-    def fit(self, train_loader, test_loader=None, epoches=10, learning_rate=1.0e-3):
+    def fit(self, train_loader, test_loader=None, epochs:int=10, learning_rate:float=1.0e-3) -> Optional[dict]:
+        """ fits model on data
+            performs early stop based on test-f1 score
+            returns dict with best results metrics
+        """
         self.to(self.device)
         logging.info(
             "Start training on {} batches with {}.".format(
@@ -284,7 +289,7 @@ class ForecastBasedModel(nn.Module):
         best_f1 = -float("inf")
         best_results = None
         worse_count = 0
-        for epoch in range(1, epoches + 1):
+        for epoch in range(1, epochs + 1):
             epoch_time_start = time.time()
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -301,7 +306,7 @@ class ForecastBasedModel(nn.Module):
             epoch_loss = epoch_loss / batch_cnt
             epoch_time_elapsed = time.time() - epoch_time_start
             logging.info(
-                "Epoch {}/{}, training loss: {:.5f} [{:.2f}s]".format(epoch, epoches, epoch_loss, epoch_time_elapsed)
+                "Epoch {}/{}, training loss: {:.5f} [{:.2f}s]".format(epoch, epochs, epoch_loss, epoch_time_elapsed)
             )
             self.time_tracker["train"] = epoch_time_elapsed
 

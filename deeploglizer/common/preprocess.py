@@ -4,6 +4,7 @@ import itertools
 import torch
 import numpy as np
 from collections import Counter, defaultdict
+from typing import Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.base import BaseEstimator
 import hashlib
@@ -170,8 +171,8 @@ class FeatureExtractor(BaseEstimator):
             json_pretty_dump(
                 param_json, os.path.join(self.cache_dir, "feature_extractor.json")
             )
-
-    def __generate_windows(self, session_dict, stride):
+            
+    def __generate_windows(self, session_dict:defaultdict, stride:int):
         window_count = 0
         for session_id, data_dict in session_dict.items():
             if self.window_type == "sliding":
@@ -271,7 +272,7 @@ class FeatureExtractor(BaseEstimator):
             logging.info("Cannot load cached feature extractor.")
             return False
 
-    def fit(self, session_dict:dict):
+    def fit(self, session_dict:Dict[str, defaultdict]):
         if self.load():
             return
         log_padding = "<pad>"
@@ -287,7 +288,7 @@ class FeatureExtractor(BaseEstimator):
             {idx: log for idx, log in enumerate(self.ulog_train, 2)}
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
-
+        logging.info(f'templates found: {str(self.log2id_train)}')
         logging.info("{} templates are found.".format(len(self.log2id_train)))
 
         if self.label_type == "next_log":
@@ -325,7 +326,7 @@ class FeatureExtractor(BaseEstimator):
         if self.cache:
             self.save()
 
-    def transform(self, session_dict:dict, datatype="train") -> dict:
+    def transform(self, session_dict:Dict[str, defaultdict], datatype:str="train") -> Dict[str, defaultdict]:
         """ Extract features
         """
         
@@ -378,6 +379,6 @@ class FeatureExtractor(BaseEstimator):
             dump_pickle(session_dict, cached_file)
         return session_dict
 
-    def fit_transform(self, session_dict:dict) -> dict:
+    def fit_transform(self, session_dict:Dict[str, defaultdict]) -> Dict[str, defaultdict]:
         self.fit(session_dict)
         return self.transform(session_dict, datatype="train")
