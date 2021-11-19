@@ -20,6 +20,8 @@ from torch.utils.data import Dataset
 
 from deeploglizer.common.utils import decision
 
+logger = logging.getLogger("deeploglizer")
+
 
 def load_sessions(data_dir:str) -> Tuple[dict, dict]:
     """ load sessions from a data directory
@@ -55,12 +57,12 @@ def load_sessions(data_dir:str) -> Tuple[dict, dict]:
     ratio_train = sum(train_labels) / num_train
     num_test = len(session_test)
     ratio_test = sum(test_labels) / num_test
-    logging.info("Load from {}".format(data_dir))
-    logging.info(json.dumps(data_desc, indent=4))
-    logging.info(
+    logger.info("Load from {}".format(data_dir))
+    logger.info(json.dumps(data_desc, indent=4))
+    logger.info(
         "# train sessions {} ({:.2f} anomalies)".format(num_train, ratio_train)
     )
-    logging.info("# test sessions {} ({:.2f} anomalies)".format(num_test, ratio_test))
+    logger.info("# test sessions {} ({:.2f} anomalies)".format(num_test, ratio_test))
 
     return session_train, session_test
 
@@ -101,17 +103,17 @@ def load_BGL(
     filter_normal=True,
     **kwargs
 ):
-    logging.info("Loading BGL logs from {}.".format(log_file))
+    logger.info("Loading BGL logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     # struct_log.sort_values(by=["Timestamp"], inplace=True)
-    logging.info("{} lines loaded.".format(struct_log.shape[0]))
+    logger.info("{} lines loaded.".format(struct_log.shape[0]))
 
     templates = struct_log["EventTemplate"].values
     labels = struct_log["Label"].map(lambda x: x != "-").astype(int).values
 
     total_indice = np.array(list(range(templates.shape[0])))
     if random_partition:
-        logging.info("Using random partition.")
+        logger.info("Using random partition.")
         np.random.shuffle(total_indice)
 
     if train_ratio is None:
@@ -130,7 +132,7 @@ def load_BGL(
     ]
 
     if filter_normal:
-        logging.info(
+        logger.info(
             "Filtering unseen normal tempalates in {} test data.".format(len(idx_test))
         )
         seen_normal = set(templates[idx_train].tolist())
@@ -153,8 +155,8 @@ def load_BGL(
     train_anomaly = 100 * sum(labels_train) / len(labels_train)
     test_anomaly = 100 * sum(labels_test) / len(labels_test)
 
-    logging.info("# train lines: {} ({:.2f}%)".format(len(labels_train), train_anomaly))
-    logging.info("# test lines: {} ({:.2f}%)".format(len(labels_test), test_anomaly))
+    logger.info("# train lines: {} ({:.2f}%)".format(len(labels_train), train_anomaly))
+    logger.info("# test lines: {} ({:.2f}%)".format(len(labels_test), test_anomaly))
 
     return session_train, session_test
 
@@ -178,7 +180,7 @@ def load_HDFS(
     -------
         TODO
     """
-    logging.info("Loading HDFS logs from {}.".format(log_file))
+    logger.info("Loading HDFS logs from {}.".format(log_file))
     struct_log = pd.read_csv(log_file, engine="c", na_filter=False, memory_map=True)
     # struct_log.sort_values(by=["Date", "Time"], inplace=True)
 
@@ -203,7 +205,7 @@ def load_HDFS(
     session_idx = list(range(len(session_dict)))
     # split data
     if random_partition:
-        logging.info("Using random partition.")
+        logger.info("Using random partition.")
         np.random.shuffle(session_idx)
 
     session_ids = np.array(list(session_dict.keys()))
@@ -222,7 +224,7 @@ def load_HDFS(
     session_labels_train = session_labels[session_idx_train]
     session_labels_test = session_labels[session_idx_test]
 
-    logging.info("Total # sessions: {}".format(len(session_ids)))
+    logger.info("Total # sessions: {}".format(len(session_ids)))
 
     session_train = {
         k: session_dict[k]
@@ -239,10 +241,10 @@ def load_HDFS(
     train_anomaly = 100 * sum(session_labels_train) / len(session_labels_train)
     test_anomaly = 100 * sum(session_labels_test) / len(session_labels_test)
 
-    logging.info(
+    logger.info(
         "# train sessions: {} ({:.2f}%)".format(len(session_train), train_anomaly)
     )
-    logging.info(
+    logger.info(
         "# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly)
     )
 
@@ -260,7 +262,7 @@ def load_HDFS_semantic(log_semantic_path):
         session_test = pickle.load(fr)
 
     # session_test = {k: v for i, (k, v) in enumerate(session_test.items()) if i < 50000}
-    logging.info(
+    logger.info(
         "# train sessions: {}, # test sessions: {}".format(
             len(session_train), len(session_test)
         )
@@ -291,11 +293,11 @@ def load_HDFS_id(log_id_path):
         sample = {"templates": line.split(), "label": 1}
         session_test[idx] = sample
 
-    logging.info(
+    logger.info(
         "# train sessions: {}, # test sessions: {}".format(
             len(session_train), len(session_test)
         )
     )
 
-    # logging.info("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
+    # logger.info("# test sessions: {} ({:.2f}%)".format(len(session_test), test_anomaly_ratio))
     return session_train, session_test

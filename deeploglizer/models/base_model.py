@@ -6,11 +6,13 @@ import logging
 import numpy as np
 import pandas as pd
 from torch import nn
+from torch.utils.data import DataLoader
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
 from typing import Optional
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
+logger = logging.getLogger("deeploglizer")
 
 class Embedder(nn.Module):
     def __init__(
@@ -78,10 +80,10 @@ class ForecastBasedModel(nn.Module):
                 use_tfidf=use_tfidf,
             )
         else:
-            logging.info(f'Unrecognized feature type, except sequentials or semantics, got {feature_type}')
+            logger.info(f'Unrecognized feature type, except sequentials or semantics, got {feature_type}')
 
-    def evaluate(self, test_loader, dtype:str="test") -> Optional[dict]:
-        logging.info("Evaluating {} data.".format(dtype))
+    def evaluate(self, test_loader:DataLoader, dtype:str="test") -> Optional[dict]:
+        logger.info("Evaluating {} data.".format(dtype))
 
         if self.label_type == "next_log":
             return self.__evaluate_next_log(test_loader, dtype=dtype)
@@ -90,7 +92,7 @@ class ForecastBasedModel(nn.Module):
         elif self.label_type == "none":
             return self.__evaluate_recst(test_loader, dtype=dtype)
 
-    def __evaluate_recst(self, test_loader, dtype:str="test") -> dict:
+    def __evaluate_recst(self, test_loader:DataLoader, dtype:str="test") -> dict:
         self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -107,7 +109,7 @@ class ForecastBasedModel(nn.Module):
                 )
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
-            logging.info("Finish inference [{:.2f}s]".format(infer_end - infer_start))
+            logger.info("Finish inference [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
 
             store_df = pd.DataFrame(store_dict)
@@ -133,10 +135,10 @@ class ForecastBasedModel(nn.Module):
                 "pc": precision_score(y, pred),
                 "acc": accuracy_score(y, pred),
             }
-            logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
+            logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_anomaly(self, test_loader, dtype:str="test") -> dict:
+    def __evaluate_anomaly(self, test_loader:DataLoader, dtype:str="test") -> dict:
 
         self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -154,7 +156,7 @@ class ForecastBasedModel(nn.Module):
                 )
                 store_dict["window_preds"].extend(tensor2flatten_arr(y_pred))
             infer_end = time.time()
-            logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            logger.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
 
             store_df = pd.DataFrame(store_dict)
@@ -169,10 +171,10 @@ class ForecastBasedModel(nn.Module):
                 "pc": precision_score(y, pred),
                 "acc": accuracy_score(y, pred),
             }
-            logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
+            logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
             return eval_results
 
-    def __evaluate_next_log(self, test_loader, dtype:str="test") -> Optional[dict]:
+    def __evaluate_next_log(self, test_loader:DataLoader, dtype:str="test") -> Optional[dict]:
         model = self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -196,7 +198,7 @@ class ForecastBasedModel(nn.Module):
                 store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
                 store_dict["y_prob_topk"].extend(y_prob_topk.data.cpu().numpy())
             infer_end = time.time()
-            logging.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            logger.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
             store_df = pd.DataFrame(store_dict)
             best_result = None
@@ -205,7 +207,7 @@ class ForecastBasedModel(nn.Module):
             count_start = time.time()
 
             topkdf = pd.DataFrame(store_df["y_pred_topk"].tolist())
-            logging.info("Calculating acc sum.")
+            logger.info("Calculating acc sum.")
             hit_df = pd.DataFrame()
             for col in sorted(topkdf.columns):
                 topk = col + 1
@@ -226,7 +228,7 @@ class ForecastBasedModel(nn.Module):
                 ).astype(int)
             # store_df.to_csv("store_{}_2.csv".format(dtype), index=False)
 
-            logging.info("Finish generating store_df.")
+            logger.info("Finish generating store_df.")
 
             if self.eval_type == "session":
                 use_cols = ["session_idx", "window_anomalies"] + [
@@ -249,19 +251,19 @@ class ForecastBasedModel(nn.Module):
                     "pc": precision_score(y, pred, zero_division=1),
                     "top{}-acc".format(topk): window_topk_acc,
                 }
-                logging.info({k: f"{v:.3f}" for k, v in eval_results.items()})
+                logger.info({k: f"{v:.3f}" for k, v in eval_results.items()})
                 if eval_results["f1"] >= best_f1:
                     best_result = eval_results
                     best_f1 = eval_results["f1"]
             count_end = time.time()
-            logging.info("Finish counting [{:.2f}s]".format(count_end - count_start))
+            logger.info("Finish counting [{:.2f}s]".format(count_end - count_start))
             return best_result
 
-    def __input2device(self, batch_input):
+    def __input2device(self, batch_input) -> dict:
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
     def save_model(self):
-        logging.info("Saving model to {}".format(self.model_save_file))
+        logger.info("Saving model to {}".format(self.model_save_file))
         try:
             torch.save(
                 self.state_dict(),
@@ -271,17 +273,17 @@ class ForecastBasedModel(nn.Module):
         except:
             torch.save(self.state_dict(), self.model_save_file)
 
-    def load_model(self, model_save_file=""):
-        logging.info("Loading model from {}".format(self.model_save_file))
+    def load_model(self, model_save_file:str=""):
+        logger.info("Loading model from {}".format(self.model_save_file))
         self.load_state_dict(torch.load(model_save_file, map_location=self.device))
 
-    def fit(self, train_loader, test_loader=None, epochs:int=10, learning_rate:float=1.0e-3) -> Optional[dict]:
+    def fit(self, train_loader:DataLoader, test_loader:Optional[DataLoader]=None, epochs:int=10, learning_rate:float=1.0e-3) -> Optional[dict]:
         """ fits model on data
             performs early stop based on test-f1 score
             returns dict with best results metrics
         """
         self.to(self.device)
-        logging.info(
+        logger.info(
             "Start training on {} batches with {}.".format(
                 len(train_loader), self.device
             )
@@ -305,7 +307,7 @@ class ForecastBasedModel(nn.Module):
                 batch_cnt += 1
             epoch_loss = epoch_loss / batch_cnt
             epoch_time_elapsed = time.time() - epoch_time_start
-            logging.info(
+            logger.info(
                 "Epoch {}/{}, training loss: {:.5f} [{:.2f}s]".format(epoch, epochs, epoch_loss, epoch_time_elapsed)
             )
             self.time_tracker["train"] = epoch_time_elapsed
@@ -321,7 +323,7 @@ class ForecastBasedModel(nn.Module):
                 else:
                     worse_count += 1
                     if worse_count >= self.patience:
-                        logging.info("Early stop at epoch: {}".format(epoch))
+                        logger.info("Early stop at epoch: {}".format(epoch))
                         break
 
         self.load_model(self.model_save_file)

@@ -11,8 +11,11 @@ from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.dataloader import load_sessions, LogDataset
 from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 
+import logging
+logger = logging.getLogger("deeploglizer")
+logger.setLevel(level=logging.DEBUG)
 
-def main(params) -> dict:
+def main(params:dict) -> dict:
 
     model_save_path = dump_params(params)
 
