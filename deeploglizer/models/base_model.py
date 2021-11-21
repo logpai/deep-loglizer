@@ -10,8 +10,9 @@ from torch import nn
 from torch.utils.data import DataLoader
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
-from typing import Optional, Dict
+from typing import Optional
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
+
 
 logger = logging.getLogger("deeploglizer")
 
@@ -58,6 +59,7 @@ class ForecastBasedModel(nn.Module):
         gpu=-1,
         anomaly_ratio=None,
         patience=3,
+        output_all: bool = False,
         **kwargs,
     ):
         super(ForecastBasedModel, self).__init__()
@@ -70,6 +72,9 @@ class ForecastBasedModel(nn.Module):
         self.anomaly_ratio = anomaly_ratio  # only used for auto encoder
         self.patience = patience
         self.time_tracker = {}
+        self.output_all = output_all
+        self.store_df: Optional[pd.DataFrame] = None
+        self.session_df: Optional[pd.DataFrame] = None
 
         os.makedirs(model_save_path, exist_ok=True)
         self.model_save_file = os.path.join(model_save_path, "model.ckpt")
@@ -91,7 +96,7 @@ class ForecastBasedModel(nn.Module):
         test_loader: DataLoader,
         dtype: str = "test",
         extra_evaluation_functions: Optional[List[dict]] = None,
-    ) -> Optional[Dict[str, str]]:
+    ) -> Optional[dict]:
 
         logger.info("Evaluating {} data.".format(dtype))
 
@@ -190,7 +195,7 @@ class ForecastBasedModel(nn.Module):
     def __evaluate_next_log(
         self, test_loader: DataLoader, dtype: str = "test"
     ) -> Optional[dict]:
-    
+
         model = self.eval()  # set to evaluation mode
         with torch.no_grad():
             y_pred = []
@@ -242,6 +247,7 @@ class ForecastBasedModel(nn.Module):
                 store_df["window_pred_anomaly_{}".format(topk)] = (
                     ~(hit_df["acc_num"] <= check_num)
                 ).astype(int)
+            self.store_df = store_df
             # store_df.to_csv("store_{}_2.csv".format(dtype), index=False)
 
             logger.info("Finish generating store_df.")
@@ -253,8 +259,11 @@ class ForecastBasedModel(nn.Module):
                 session_df = (
                     store_df[use_cols].groupby("session_idx", as_index=False).sum()
                 )
+                self.session_df = session_df
             else:
                 session_df = store_df
+                self.session_df = session_df
+
             # session_df.to_csv("session_{}_2.csv".format(dtype), index=False)
 
             for topk in range(1, self.topk + 1):
@@ -325,6 +334,7 @@ class ForecastBasedModel(nn.Module):
         best_f1 = -float("inf")
         best_results = None
         worse_count = 0
+        loss_history, f1_history = [], []
         for epoch in range(1, epochs + 1):
             epoch_time_start = time.time()
             model = self.train()
@@ -346,10 +356,12 @@ class ForecastBasedModel(nn.Module):
                     epoch, epochs, epoch_loss, epoch_time_elapsed
                 )
             )
+            loss_history.append(epoch_loss)
             self.time_tracker["train"] = epoch_time_elapsed
 
             if test_loader is not None and (epoch % 1 == 0):
                 eval_results = self.evaluate(test_loader)
+                f1_history.append(eval_results["f1"])                
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
@@ -361,6 +373,25 @@ class ForecastBasedModel(nn.Module):
                     if worse_count >= self.patience:
                         logger.info("Early stop at epoch: {}".format(epoch))
                         break
+
+        if self.output_all:
+            best_results.update(
+                {
+                    "training_history": {
+                        "loss_history": loss_history,
+                        "f1_history": f1_history,
+                    }
+                }
+            )
+
+            best_results.update(
+                {
+                    "detailed_results": {
+                        "store_test": self.store_df,
+                        "session_test": self.session_df,
+                    }
+                }
+            )
 
         # self.load_model(self.model_save_file)
         return best_results

@@ -12,14 +12,8 @@ from deeploglizer.common.preprocess import FeatureExtractor
 from deeploglizer.common.dataloader import load_sessions, LogDataset
 from deeploglizer.common.utils import seed_everything, dump_final_results, dump_params
 
-<<<<<<< HEAD
-import logging
-logger = logging.getLogger("deeploglizer")
-logger.setLevel(level=logging.DEBUG)
-=======
 logger = logging.getLogger("deeploglizer")
 logger.setLevel(level=logging.INFO)
->>>>>>> 920356f742be767ce9871aaa3b73fc3e9f149d5b
 
 def main(params:dict) -> dict:
 

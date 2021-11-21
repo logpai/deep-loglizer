@@ -10,14 +10,15 @@ import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Union, Optional
+import pandas as pd
 
-def dump_final_results(params:dict, eval_results:dict, model:Any) -> None:
+def dump_final_results(params:dict, eval_results:dict, model:Any, storage_path:str="./experiment_records") -> None:
     """ Logs the run results to a text file which may contain other runs results.
         File is a group bydataset variable in params
     """
 
-    storage_path = Path('.') / 'experiment_records'
+    storage_path = Path(storage_path)
 
     result_str = "\t".join(["{}-{:.4f}".format(k, v) for k, v in eval_results.items()])
 
@@ -56,7 +57,8 @@ def dump_final_results(params:dict, eval_results:dict, model:Any) -> None:
 
     return
 
-def dump_params(params:dict) -> str:
+
+def dump_params(params: dict) -> str:
     hash_id = hashlib.md5(
         str(sorted([(k, v) for k, v in params.items()])).encode("utf-8")
     ).hexdigest()[0:8]
@@ -81,11 +83,11 @@ def dump_params(params:dict) -> str:
     return save_dir
 
 
-def decision(probability:float) -> bool:
+def decision(probability: float) -> bool:
     return random.random() < probability
 
 
-def json_pretty_dump(obj, filename:Union[str, Path]):
+def json_pretty_dump(obj, filename: Union[str, Path]):
     with open(filename, "w") as fw:
         json.dump(
             obj,
@@ -101,9 +103,8 @@ def tensor2flatten_arr(tensor):
     return tensor.data.cpu().numpy().reshape(-1)
 
 
-def seed_everything(seed:int=1234) -> None:
-    """ set random number chains for the process
-    """
+def seed_everything(seed: int = 1234) -> None:
+    """set random number chains for the process"""
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
@@ -112,9 +113,8 @@ def seed_everything(seed:int=1234) -> None:
     return
 
 
-def set_device(gpu:int=-1) -> torch.device:
-    """ If you run .device("cuda"), your tensor will be routed to the CUDA current device, which by default is the 0 device.
-    """
+def set_device(gpu: int = -1) -> torch.device:
+    """If you run .device("cuda"), your tensor will be routed to the CUDA current device, which by default is the 0 device."""
     if gpu != -1 and torch.cuda.is_available():
         device = torch.device("cuda:" + str(gpu))
     else:
@@ -122,15 +122,14 @@ def set_device(gpu:int=-1) -> torch.device:
     return device
 
 
-def dump_pickle(obj:Any, file_path:str) -> None:
+def dump_pickle(obj: Any, file_path: str) -> None:
     logging.info("Dumping to {}".format(file_path))
     with open(file_path, "wb") as fw:
         pickle.dump(obj, fw)
     return
 
 
-def load_pickle(file_path:str):
+def load_pickle(file_path: str):
     logging.info("Loading from {}".format(file_path))
     with open(file_path, "rb") as fr:
         return pickle.load(fr)
-
