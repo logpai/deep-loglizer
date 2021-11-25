@@ -308,10 +308,10 @@ class ForecastBasedModel(nn.Module):
         except:
             torch.save(self.state_dict(), self.model_save_file)
 
-    def load_model(self, model_save_file: str = "") -> None:
+    def load_model(self) -> None:
         """Loads model from a file into memory"""
         logger.info("Loading model from {}".format(self.model_save_file))
-        self.load_state_dict(torch.load(model_save_file, map_location=self.device))
+        self.load_state_dict(torch.load(self.model_save_file, map_location=self.device))
 
     def fit(
         self,
@@ -395,3 +395,42 @@ class ForecastBasedModel(nn.Module):
 
         # self.load_model(self.model_save_file)
         return best_results
+
+    def apply(self, data_loader:DataLoader) -> pd.DataFrame:
+        """ Apply model to new data
+
+        Args:
+            data_loader (DataLoader): Incoming data
+
+        Returns:
+            pd.DataFrame: [description]
+        """
+
+        infer_start = time.time()
+        model = self.eval()
+        with torch.no_grad():
+            y_pred = []
+            store_dict = defaultdict(list)
+            for batch_input in data_loader:
+                return_dict = model.forward(self.__input2device(batch_input))
+                y_pred = return_dict["y_pred"]
+                y_prob_topk, y_pred_topk = torch.topk(y_pred, self.topk)  # b x topk
+
+                store_dict["session_idx"].extend(
+                    tensor2flatten_arr(batch_input["session_idx"])
+                )
+                store_dict["window_anomalies"].extend(
+                    tensor2flatten_arr(batch_input["window_anomalies"])
+                )
+                store_dict["window_labels"].extend(
+                    tensor2flatten_arr(batch_input["window_labels"])
+                )
+                store_dict["x"].extend(batch_input["features"].data.cpu().numpy())
+                store_dict["y_pred_topk"].extend(y_pred_topk.data.cpu().numpy())
+                store_dict["y_prob_topk"].extend(y_prob_topk.data.cpu().numpy())
+            infer_end = time.time()
+            logger.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
+            self.time_tracker["test"] = infer_end - infer_start
+            store_df = pd.DataFrame(store_dict)
+
+        return store_df

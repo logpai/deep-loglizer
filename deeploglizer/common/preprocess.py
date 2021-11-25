@@ -1,6 +1,8 @@
 import os
 import io
 import itertools
+from typing import Union, Optional
+from pathlib import Path
 import torch
 import numpy as np
 from collections import Counter, defaultdict
@@ -79,7 +81,7 @@ class Vocab:
         return torch.from_numpy(pretrain_matrix)
 
     def trp(self, l, n):
-        """ Truncate or pad a list """
+        """Truncate or pad a list"""
         r = l[:n]
         if len(r) < n:
             r.extend(list([0]) * (n - len(r)))
@@ -173,8 +175,8 @@ class FeatureExtractor(BaseEstimator):
             json_pretty_dump(
                 param_json, os.path.join(self.cache_dir, "feature_extractor.json")
             )
-            
-    def __generate_windows(self, session_dict:defaultdict, stride:int):
+
+    def __generate_windows(self, session_dict: defaultdict, stride: int):
         window_count = 0
         for session_id, data_dict in session_dict.items():
             if self.window_type == "sliding":
@@ -185,12 +187,12 @@ class FeatureExtractor(BaseEstimator):
                 window_labels = []
                 window_anomalies = []
                 while i + self.window_size < template_len:
-                    window = templates[i: i + self.window_size]
+                    window = templates[i : i + self.window_size]
                     next_log = self.log2id_train.get(templates[i + self.window_size], 1)
 
                     if isinstance(data_dict["label"], list):
                         window_anomaly = int(
-                            1 in data_dict["label"][i: i + self.window_size + 1]
+                            1 in data_dict["label"][i : i + self.window_size + 1]
                         )
                     else:
                         window_anomaly = data_dict["label"]
@@ -257,24 +259,58 @@ class FeatureExtractor(BaseEstimator):
         total_idx = [list(map(lambda x: log2idx[x], window)) for window in windows]
         return np.array(total_idx)
 
-    def save(self):
-        logger.info("Saving feature extractor to {}.".format(self.cache_dir))
-        with open(os.path.join(self.cache_dir, "est.pkl"), "wb") as fw:
+    def save(self, path: Optional[Union[str, Path]] = None):
+        """save feature extractor to pickle
+
+        Args:
+            path (Optional[Union[str, Path]], optional): path if being managed manually. Defaults to None.
+        """
+        if self.cache:
+            path = os.path.join(self.cache_dir, "est.pkl")
+            logger.info("Saving feature extractor to {}.".format(path))
+        elif path is None:
+            raise Exception("You must provide a path to save the Feature Extractor pickle")
+        else:
+            param_json = self.get_params()
+            json_pretty_dump(param_json, Path(path) / "feature_extractor.json")
+            path = Path(path) / "feature_extractor.pkl"
+
+        with open(path, "wb") as fw:
             pickle.dump(self, fw)
 
-    def load(self):
+        return
+
+    def load(self, path: Optional[Union[str, Path]] = None):
+        """load feature extractor data from pickle into self
+
+        Args:
+            path (Optional[Union[str, Path]], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: whether load was successful or not
+        """        
         try:
-            save_file = os.path.join(self.cache_dir, "est.pkl")
-            logger.info("Loading feature extractor from {}.".format(save_file))
-            with open(save_file, "rb") as fw:
+            if self.cache:
+                path = os.path.join(self.cache_dir, "est.pkl")
+                logger.info("Loading feature extractor from {}.".format(path))
+            elif path is None:
+                logger.warning(
+                    "You must provide a path to load the Feature Extractor pickle"
+                )
+                return False
+            else:
+                path = Path(path) / "feature_extractor.pkl"
+
+            with open(path, "rb") as fw:
                 obj = pickle.load(fw)
                 self.__dict__ = obj.__dict__
                 return True
+
         except Exception as e:
             logger.info("Cannot load cached feature extractor.")
             return False
 
-    def fit(self, session_dict:Dict[str, defaultdict]):
+    def fit(self, session_dict: Dict[str, defaultdict]):
         if self.load():
             return
         log_padding = "<pad>"
@@ -290,7 +326,7 @@ class FeatureExtractor(BaseEstimator):
             {idx: log for idx, log in enumerate(self.ulog_train, 2)}
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
-        logger.info(f'templates found: {str(self.log2id_train)}')
+        logger.debug(f"templates found: {str(self.log2id_train)}")
         logger.info("{} templates are found.".format(len(self.log2id_train)))
 
         if self.label_type == "next_log":
@@ -328,16 +364,18 @@ class FeatureExtractor(BaseEstimator):
         if self.cache:
             self.save()
 
-    def transform(self, session_dict:Dict[str, defaultdict], datatype:str="train") -> Dict[str, defaultdict]:
-        """ Extract features
-        """
-        
+    def transform(
+        self, session_dict: Dict[str, defaultdict], datatype: str = "train"
+    ) -> Dict[str, defaultdict]:
+        """Extract features"""
+
         logger.info("Transforming {} data.".format(datatype))
         ulog = set(itertools.chain(*[v["templates"] for k, v in session_dict.items()]))
-        if datatype == "test":
+        if datatype in ["test", "score"]:
             # handle new logs
             ulog_new = ulog - self.ulog_train
             logger.info(f"{len(ulog_new)} new templates show while testing.")
+            logger.debug(ulog_new)
 
         if self.cache:
             cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
@@ -381,6 +419,8 @@ class FeatureExtractor(BaseEstimator):
             dump_pickle(session_dict, cached_file)
         return session_dict
 
-    def fit_transform(self, session_dict:Dict[str, defaultdict]) -> Dict[str, defaultdict]:
+    def fit_transform(
+        self, session_dict: Dict[str, defaultdict]
+    ) -> Dict[str, defaultdict]:
         self.fit(session_dict)
         return self.transform(session_dict, datatype="train")

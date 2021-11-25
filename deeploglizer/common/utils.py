@@ -58,12 +58,12 @@ def dump_final_results(params:dict, eval_results:dict, model:Any, storage_path:s
     return
 
 
-def dump_params(params: dict) -> str:
+def dump_params(params: dict, save_dir_root:str="./experiment_records") -> str:
     hash_id = hashlib.md5(
         str(sorted([(k, v) for k, v in params.items()])).encode("utf-8")
     ).hexdigest()[0:8]
     params["hash_id"] = hash_id
-    save_dir = os.path.join("./experiment_records", hash_id)
+    save_dir = os.path.join(save_dir_root, hash_id)
     os.makedirs(save_dir, exist_ok=True)
 
     json_pretty_dump(params, os.path.join(save_dir, "params.json"))
