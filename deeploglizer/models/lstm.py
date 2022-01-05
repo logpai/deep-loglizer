@@ -95,6 +95,7 @@ class LSTM(ForecastBasedModel):
             self.attn = Attention(hidden_size * num_directions, window_size)
 
         self.criterion = nn.CrossEntropyLoss()
+        #self.criterion = nn.MSELoss()
 
         self.prediction_layer = nn.Linear(
             self.hidden_size * self.num_directions, num_labels

@@ -1,16 +1,15 @@
-from argparse import OPTIONAL
 import os
 import time
 import torch
 import logging
 import numpy as np
 import pandas as pd
-from typing import List
+from typing import List, Optional
 from torch import nn
 from torch.utils.data import DataLoader
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
-from typing import Optional
+
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
 
@@ -320,7 +319,7 @@ class ForecastBasedModel(nn.Module):
         epochs: int = 10,
         learning_rate: float = 1.0e-3,
     ) -> Optional[dict]:
-        """fits model on data
+        """fit model on data
         performs early stop based on test-f1 score
         returns dict with best results metrics
         """
@@ -432,5 +431,6 @@ class ForecastBasedModel(nn.Module):
             logger.info("Finish inference. [{:.2f}s]".format(infer_end - infer_start))
             self.time_tracker["test"] = infer_end - infer_start
             store_df = pd.DataFrame(store_dict)
+            store_df = store_df.drop(columns=['window_anomalies'])
 
         return store_df

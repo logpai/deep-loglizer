@@ -271,6 +271,8 @@ class FeatureExtractor(BaseEstimator):
         elif path is None:
             raise Exception("You must provide a path to save the Feature Extractor pickle")
         else:
+            json_pretty_dump(self.log2id_train, Path(path) / "template_dict.json")
+
             param_json = self.get_params()
             json_pretty_dump(param_json, Path(path) / "feature_extractor.json")
             path = Path(path) / "feature_extractor.pkl"
@@ -367,7 +369,17 @@ class FeatureExtractor(BaseEstimator):
     def transform(
         self, session_dict: Dict[str, defaultdict], datatype: str = "train"
     ) -> Dict[str, defaultdict]:
-        """Extract features"""
+        """Extract features
+        
+            Returns:
+
+            In each session a set of windows is produced. These are padded to the right with 1 to ensure windows are fixed
+            length to self.window_size. Each window is converted to a sequential array which is x.
+            model predicts y: window_labels[w_i] with x: sequences[w_i]
+            order is from left to right.
+
+
+        """
 
         logger.info("Transforming {} data.".format(datatype))
         ulog = set(itertools.chain(*[v["templates"] for k, v in session_dict.items()]))
@@ -375,7 +387,7 @@ class FeatureExtractor(BaseEstimator):
             # handle new logs
             ulog_new = ulog - self.ulog_train
             logger.info(f"{len(ulog_new)} new templates show while testing.")
-            logger.debug(ulog_new)
+            logger.debug(f"new templates: {ulog_new}")
 
         if self.cache:
             cached_file = os.path.join(self.cache_dir, datatype + ".pkl")
@@ -385,7 +397,7 @@ class FeatureExtractor(BaseEstimator):
         # generate windows, each window contains logid only
         if datatype == "train":
             self.__generate_windows(session_dict, self.stride)
-        else:
+        else: # weird!
             self.__generate_windows(session_dict, self.stride)
 
         if self.feature_type == "semantics":

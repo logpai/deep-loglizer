@@ -10,8 +10,7 @@ import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Any, Union, Optional
-import pandas as pd
+from typing import Any, Union
 
 def dump_final_results(params:dict, eval_results:dict, model:Any, storage_path:str="./experiment_records") -> None:
     """ Logs the run results to a text file which may contain other runs results.
