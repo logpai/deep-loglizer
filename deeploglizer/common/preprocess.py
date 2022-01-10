@@ -146,6 +146,7 @@ class FeatureExtractor(BaseEstimator):
         window_type="sliding",
         window_size=None,
         stride=None,
+        left_padding=False,
         max_token_len=50,
         min_token_count=1,
         pretrain_path=None,
@@ -159,6 +160,7 @@ class FeatureExtractor(BaseEstimator):
         self.window_type = window_type
         self.window_size = window_size
         self.stride = stride
+        self.left_padding = left_padding
         self.pretrain_path = pretrain_path
         self.use_tfidf = use_tfidf
         self.max_token_len = max_token_len
@@ -269,7 +271,9 @@ class FeatureExtractor(BaseEstimator):
             path = os.path.join(self.cache_dir, "est.pkl")
             logger.info("Saving feature extractor to {}.".format(path))
         elif path is None:
-            raise Exception("You must provide a path to save the Feature Extractor pickle")
+            raise Exception(
+                "You must provide a path to save the Feature Extractor pickle"
+            )
         else:
             json_pretty_dump(self.log2id_train, Path(path) / "template_dict.json")
 
@@ -290,7 +294,7 @@ class FeatureExtractor(BaseEstimator):
 
         Returns:
             [type]: whether load was successful or not
-        """        
+        """
         try:
             if self.cache:
                 path = os.path.join(self.cache_dir, "est.pkl")
@@ -317,6 +321,7 @@ class FeatureExtractor(BaseEstimator):
             return
         log_padding = "<pad>"
         log_oov = "<oov>"
+        n_pad = 2
 
         # encode
         total_logs = list(
@@ -324,8 +329,13 @@ class FeatureExtractor(BaseEstimator):
         )
         self.ulog_train = set(total_logs)
         self.id2log_train = {0: log_padding, 1: log_oov}
+
+        if self.left_padding:
+            self.id2log_train.update({2: "<left_pad>"})
+            n_pad = 3
+
         self.id2log_train.update(
-            {idx: log for idx, log in enumerate(self.ulog_train, 2)}
+            {idx: log for idx, log in enumerate(self.ulog_train, n_pad)}
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
         logger.debug(f"templates found: {str(self.log2id_train)}")
@@ -370,13 +380,13 @@ class FeatureExtractor(BaseEstimator):
         self, session_dict: Dict[str, defaultdict], datatype: str = "train"
     ) -> Dict[str, defaultdict]:
         """Extract features
-        
-            Returns:
 
-            In each session a set of windows is produced. These are padded to the right with 1 to ensure windows are fixed
-            length to self.window_size. Each window is converted to a sequential array which is x.
-            model predicts y: window_labels[w_i] with x: sequences[w_i]
-            order is from left to right.
+        Returns:
+
+        In each session a set of windows is produced. These are padded to the right with 1 to ensure windows are fixed
+        length to self.window_size. Each window is converted to a sequential array which is x.
+        model predicts y: window_labels[w_i] with x: sequences[w_i]
+        order is from left to right.
 
 
         """
@@ -394,10 +404,22 @@ class FeatureExtractor(BaseEstimator):
             if os.path.isfile(cached_file):
                 return load_pickle(cached_file)
 
+        # prepend left pad to every template list
+        if self.left_padding:
+            [
+                session_dict[k].update(
+                    {
+                        "templates": ["<left_pad>"] * self.window_size
+                        + session_dict[k]["templates"]
+                    }
+                )
+                for k in session_dict.keys()
+            ]
+
         # generate windows, each window contains logid only
         if datatype == "train":
             self.__generate_windows(session_dict, self.stride)
-        else: # weird!
+        else:  # weird!
             self.__generate_windows(session_dict, self.stride)
 
         if self.feature_type == "semantics":
@@ -425,7 +447,6 @@ class FeatureExtractor(BaseEstimator):
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
-
         logger.info("Finish feature extraction ({}).".format(datatype))
         if self.cache:
             dump_pickle(session_dict, cached_file)
