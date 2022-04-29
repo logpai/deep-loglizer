@@ -117,7 +117,7 @@ class PLELog:
 
 
 if __name__ == '__main__':
-    argparser = argparse.ArgumentParser( )
+    argparser = argparse.ArgumentParser()
     argparser.add_argument('--dataset', default='BGL', type=str, help='Target dataset. Default HDFS')
     argparser.add_argument('--mode', default='train', type=str, help='train or test')
     argparser.add_argument('--parser', default='IBM', type=str,
