@@ -300,7 +300,7 @@ class FeatureExtractor(BaseEstimator):
                 path = os.path.join(self.cache_dir, "est.pkl")
                 logger.info("Loading feature extractor from {}.".format(path))
             elif path is None:
-                logger.warning(
+                logger.debug(
                     "You must provide a path to load the Feature Extractor pickle"
                 )
                 return False
