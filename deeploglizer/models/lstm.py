@@ -2,6 +2,7 @@ from typing import Dict, Optional
 import math
 import torch
 from torch import nn
+from tqdm import tqdm
 
 from deeploglizer.models import ForecastBasedModel
 

@@ -9,7 +9,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
-
+from tqdm import tqdm
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 
 
@@ -59,6 +59,7 @@ class ForecastBasedModel(nn.Module):
         anomaly_ratio=None,
         patience=3,
         output_all: bool = False,
+        log_epochs: bool = False,
         **kwargs,
     ):
         super(ForecastBasedModel, self).__init__()
@@ -72,6 +73,7 @@ class ForecastBasedModel(nn.Module):
         self.patience = patience
         self.time_tracker = {}
         self.output_all = output_all
+        self.log_epochs = log_epochs
         self.store_df: Optional[pd.DataFrame] = None
         self.session_df: Optional[pd.DataFrame] = None
 
@@ -334,7 +336,7 @@ class ForecastBasedModel(nn.Module):
         best_results = None
         worse_count = 0
         loss_history, f1_history = [], []
-        for epoch in range(1, epochs + 1):
+        for epoch in tqdm(range(1, epochs + 1), disable = not self.log_epochs):
             epoch_time_start = time.time()
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
