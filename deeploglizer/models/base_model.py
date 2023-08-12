@@ -11,10 +11,10 @@ from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
 from tqdm import tqdm
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
+from loguru import logger
 
-
-logger = logging.getLogger("deeploglizer")
-
+#logger = logging.getLogger("deeploglizer")
+warn_flag = True
 
 class Embedder(nn.Module):
     def __init__(
@@ -99,11 +99,10 @@ class ForecastBasedModel(nn.Module):
         extra_evaluation_functions: Optional[List[dict]] = None,
     ) -> Optional[dict]:
 
-        logger.info("Evaluating {} data.".format(dtype))
+        logger.info(f"Evaluating {dtype} data. with label_type {self.label_type}")
 
         self.extra_evaluation_functions = extra_evaluation_functions
         # List of {'name':name, 'func':func, 'zero_division': zero_division [Optional]}
-
         if self.label_type == "next_log":
             return self.__evaluate_next_log(test_loader, dtype=dtype)
         elif self.label_type == "anomaly":
@@ -251,9 +250,13 @@ class ForecastBasedModel(nn.Module):
             self.store_df = store_df
             # store_df.to_csv("store_{}_2.csv".format(dtype), index=False)
 
-            logger.info("Finish generating store_df.")
-
             if self.eval_type == "session":
+                if store_df['window_anomalies'].sum() == 0:
+                    if warn_flag:
+                        logger.warning('No anomaly labels detected in window_anomalies column.')
+                        logger.warning('Deeploglizer will calculate f1,pc,rc but these are meaningless.')
+                        warn_flag = False
+
                 use_cols = ["session_idx", "window_anomalies"] + [
                     f"window_pred_anomaly_{topk}" for topk in range(1, self.topk + 1)
                 ]
@@ -271,12 +274,19 @@ class ForecastBasedModel(nn.Module):
                 pred = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int)
                 y = (session_df["window_anomalies"] > 0).astype(int)
                 window_topk_acc = 1 - store_df["window_anomalies"].sum() / len(store_df)
+                #Metric for fully unsupervised setting
+                # For each window (row), score is 0 if actual logk, window_labels, is in topk predictions, 1 otherwise
+                # This metric should converge to a value with increasing epochs. 
+                # If it keeps decaying to zero, the model is overfitting regime.
+                # if it converges to a non-zero value, there are anomalies in the VAL set.
+                val_loss = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int).sum() / len(session_df)
 
                 eval_results = {
                     "f1": f1_score(y, pred),
                     "rc": recall_score(y, pred, zero_division=0),
                     "pc": precision_score(y, pred, zero_division=1),
                     "top{}-acc".format(topk): window_topk_acc,
+                    "top{}-loss".format(topk): val_loss,
                 }
 
                 if self.extra_evaluation_functions:
@@ -335,7 +345,8 @@ class ForecastBasedModel(nn.Module):
         best_f1 = -float("inf")
         best_results = None
         worse_count = 0
-        loss_history, f1_history = [], []
+        loss_history, f1_history, topkloss_val_hist = [], [], []
+
         for epoch in tqdm(range(1, epochs + 1), disable = not self.log_epochs):
             epoch_time_start = time.time()
             model = self.train()
@@ -362,7 +373,10 @@ class ForecastBasedModel(nn.Module):
 
             if test_loader is not None and (epoch % 1 == 0):
                 eval_results = self.evaluate(test_loader)
-                f1_history.append(eval_results["f1"])                
+                f1_history.append(eval_results["f1"])
+                if f'top{self.topk}-loss' in eval_results:
+                    topkloss_val_hist.append(eval_results[f'top{self.topk}-loss'])
+
                 if eval_results["f1"] > best_f1:
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
@@ -374,13 +388,14 @@ class ForecastBasedModel(nn.Module):
                     if worse_count >= self.patience:
                         logger.info("Early stop at epoch: {}".format(epoch))
                         break
-
+            
         if self.output_all:
             best_results.update(
                 {
                     "training_history": {
                         "loss_history": loss_history,
                         "f1_history": f1_history,
+                        "topkloss_history":topkloss_val_hist,
                     }
                 }
             )
@@ -393,7 +408,6 @@ class ForecastBasedModel(nn.Module):
                     }
                 }
             )
-
         # self.load_model(self.model_save_file)
         return best_results
 
@@ -401,10 +415,10 @@ class ForecastBasedModel(nn.Module):
         """ Apply model to new data
 
         Args:
-            data_loader (DataLoader): Incoming data
+            data_loader: Incoming data
 
         Returns:
-            pd.DataFrame: [description]
+            pd.DataFrame: 
         """
 
         infer_start = time.time()
