@@ -13,7 +13,7 @@ from tqdm import tqdm
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from loguru import logger
 
-#logger = logging.getLogger("deeploglizer")
+logger = logging.getLogger("deeploglizer")
 warn_flag = True
 
 class Embedder(nn.Module):
@@ -78,7 +78,8 @@ class ForecastBasedModel(nn.Module):
         self.session_df: Optional[pd.DataFrame] = None
 
         os.makedirs(model_save_path, exist_ok=True)
-        self.model_save_file = os.path.join(model_save_path, "model.ckpt")
+        self.model_save_path : str = model_save_path
+        self.model_save_file : str = os.path.join(model_save_path, "model.ckpt")
         if feature_type in ["sequentials", "semantics"]:
             self.embedder = Embedder(
                 meta_data["vocab_size"],
@@ -195,6 +196,8 @@ class ForecastBasedModel(nn.Module):
     def __evaluate_next_log(
         self, test_loader: DataLoader, dtype: str = "test"
     ) -> Optional[dict]:
+        
+        global warn_flag
 
         model = self.eval()  # set to evaluation mode
         with torch.no_grad():
@@ -308,21 +311,29 @@ class ForecastBasedModel(nn.Module):
     def __input2device(self, batch_input) -> dict:
         return {k: v.to(self.device) for k, v in batch_input.items()}
 
-    def save_model(self) -> None:
-        logger.info("Saving model to {}".format(self.model_save_file))
+    def save_model(self, model_save_file: str | None = None) -> None:
+        
+        if not model_save_file:
+            model_save_file = self.model_save_file
+
+        logger.info("Saving model to {}".format(model_save_file))
         try:
             torch.save(
                 self.state_dict(),
-                self.model_save_file,
+                model_save_file,
                 _use_new_zipfile_serialization=False,
             )
         except:
-            torch.save(self.state_dict(), self.model_save_file)
+            torch.save(self.state_dict(), model_save_file)
 
-    def load_model(self) -> None:
+    def load_model(self, model_save_file: str | None = None) -> None:
         """Loads model from a file into memory"""
-        logger.info("Loading model from {}".format(self.model_save_file))
-        self.load_state_dict(torch.load(self.model_save_file, map_location=self.device))
+
+        if not model_save_file:
+            model_save_file = self.model_save_file
+
+        logger.info("Loading model from {}".format(model_save_file))
+        self.load_state_dict(torch.load(model_save_file, map_location=self.device))
 
     def fit(
         self,
@@ -377,7 +388,7 @@ class ForecastBasedModel(nn.Module):
                 if f'top{self.topk}-loss' in eval_results:
                     topkloss_val_hist.append(eval_results[f'top{self.topk}-loss'])
 
-                if eval_results["f1"] > best_f1:
+                if eval_results["f1"] >= best_f1:
                     best_f1 = eval_results["f1"]
                     best_results = eval_results
                     best_results["converge"] = int(epoch)
