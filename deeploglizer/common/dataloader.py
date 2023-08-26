@@ -70,22 +70,36 @@ def load_sessions(data_dir:str) -> Tuple[dict, dict]:
 class LogDataset(Dataset):
     """ Builds pytorch datasets by only extracting needed features
     """
-    def __init__(self, session_dict:dict, feature_type="semantics"):
+    def __init__(self, session_dict:dict[str, dict], feature_type:str="semantics"):
+        """Buil pytorch datasets by only extracting needed features
+
+        Args:
+            session_dict: dict with sessions as keys. Each individual session dict expects as keys:
+                ['label', 'templates', 'windows', 'window_labels', 'window_anomalies', 'features']
+            feature_type:  Defaults to "semantics".
+        """
         flatten_data_list = []
+        mappings = []
         # flatten all sessions
-        for session_idx, data_dict in enumerate(session_dict.values()):
+
+        for session_idx, (key, data_dict) in enumerate(session_dict.items()):
             features = data_dict["features"][feature_type]
             window_labels = data_dict["window_labels"]
             window_anomalies = data_dict["window_anomalies"]
             for window_idx in range(len(window_labels)):
                 sample = {
-                    "session_idx": session_idx,  # not session id
+                    "session_idx": session_idx,  # internal index mapping to session key
                     "features": features[window_idx],
                     "window_labels": window_labels[window_idx],
                     "window_anomalies": window_anomalies[window_idx],
                 }
                 flatten_data_list.append(sample)
+            
+            mappings.append((session_idx, key))
+    
         self.flatten_data_list = flatten_data_list
+        mappings = list(set(mappings))
+        self.mapping = { k: v for k, v in  zip([m[0] for m in mappings], [m[1] for m in mappings])}
 
     def __len__(self):
         return len(self.flatten_data_list)
