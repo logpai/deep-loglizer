@@ -17,6 +17,7 @@ from tqdm import tqdm
 
 logger = logging.getLogger("deeploglizer")
 
+
 from deeploglizer.common.utils import (
     json_pretty_dump,
     dump_pickle,
@@ -129,12 +130,21 @@ class FeatureExtractor(BaseEstimator):
     """
 
     Compute features in provided data.
-    Implements fit and transform methods on top of scikit-learn BaseEstimator
+    Implements fit and transform methods on top of scikit-learn BaseEstimator.
 
-    label_type: 'none', 'next_log', 'anomaly'
+    label_type: "none', "next_log", "anomaly"
+    
     feature_type: "sequentials", "semantics", "quantitatives"
+    
     window_type: "session", "sliding"
+    
     max_token_len: only used for semantics features
+    
+    left_padding: whether to add LP events to the left of session, to improve detections at session start.
+    
+    right_padding: whether to create an extra window with OOV event at the session end.
+    Deeploglizer append a right padding window : [...A B C] =>  A B OOV -> C
+
 
     """
 
@@ -147,6 +157,7 @@ class FeatureExtractor(BaseEstimator):
         window_size=None,
         stride=None,
         left_padding=False,
+        right_padding=True,
         max_token_len=50,
         min_token_count=1,
         pretrain_path=None,
@@ -161,6 +172,7 @@ class FeatureExtractor(BaseEstimator):
         self.window_size = window_size
         self.stride = stride
         self.left_padding = left_padding
+        self.right_padding = right_padding
         self.pretrain_path = pretrain_path
         self.use_tfidf = use_tfidf
         self.max_token_len = max_token_len
@@ -204,18 +216,21 @@ class FeatureExtractor(BaseEstimator):
                     window_anomalies.append(window_anomaly)
                     i += stride
                 else:
-                    window = templates[i:-1]
-                    window.extend(["PADDING"] * (self.window_size - len(window)))
-                    next_log = self.log2id_train.get(templates[-1], 1)
+                    if self.right_padding:
+                        # append a right padding window : [...A B C] =>  A B OOV -> C
+                        # True is original deeploglizer
+                        window = templates[i:-1]
+                        window.extend(["PADDING"] * (self.window_size - len(window)))
+                        next_log = self.log2id_train.get(templates[-1], 1)
 
-                    if isinstance(data_dict["label"], list):
-                        window_anomaly = int(1 in data_dict["label"][i:])
-                    else:
-                        window_anomaly = data_dict["label"]
+                        if isinstance(data_dict["label"], list):
+                            window_anomaly = int(1 in data_dict["label"][i:])
+                        else:
+                            window_anomaly = data_dict["label"]
 
-                    windows.append(window)
-                    window_labels.append(next_log)
-                    window_anomalies.append(window_anomaly)
+                        windows.append(window)
+                        window_labels.append(next_log)
+                        window_anomalies.append(window_anomaly)
                 window_count += len(windows)
 
                 session_dict[session_id]["windows"] = windows
@@ -333,7 +348,8 @@ class FeatureExtractor(BaseEstimator):
         if self.left_padding:
             self.id2log_train.update({2: "<left_pad>"})
             n_pad = 3
-
+        
+        breakpoint()
         self.id2log_train.update(
             {idx: log for idx, log in enumerate(self.ulog_train, n_pad)}
         )
@@ -379,12 +395,12 @@ class FeatureExtractor(BaseEstimator):
     def transform(
         self, session_dict: Dict[str, defaultdict], datatype: str = "train"
     ) -> Dict[str, defaultdict]:
-        """Extract features
+        """Transform dataset to windows features
 
-        Returns:
-
-        In each session a set of windows is produced. These are padded to the right with 1 to ensure windows are fixed
-        length to self.window_size. Each window is converted to a sequential array which is x.
+        In each session a set of windows is produced.
+        If right_padding these are padded to the right with 1 to ensure windows are fixed
+        length to self.window_size.
+        Each window is converted to a sequential array which is x.
         model predicts y: window_labels[w_i] with x: sequences[w_i]
         order is from left to right.
 
@@ -415,6 +431,7 @@ class FeatureExtractor(BaseEstimator):
                 )
                 for k in session_dict.keys()
             ]
+        
 
         # generate windows, each window contains logid only
         if datatype == "train":
@@ -447,6 +464,10 @@ class FeatureExtractor(BaseEstimator):
                 feature_dict["quantitatives"] = self.__windows2quantitative(windows)
 
             session_dict[session_id]["features"] = feature_dict
+            
+        if self.right_padding is False:
+            # remove last window with the oov marker
+            pass        
         logger.info("Finish feature extraction ({}).".format(datatype))
         if self.cache:
             dump_pickle(session_dict, cached_file)
