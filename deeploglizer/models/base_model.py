@@ -60,6 +60,7 @@ class ForecastBasedModel(nn.Module):
         patience=3,
         output_all: bool = False,
         log_epochs: bool = False,
+        torch_compile: bool = False,
         **kwargs,
     ):
         super(ForecastBasedModel, self).__init__()
@@ -76,6 +77,7 @@ class ForecastBasedModel(nn.Module):
         self.log_epochs = log_epochs
         self.store_df: Optional[pd.DataFrame] = None
         self.session_df: Optional[pd.DataFrame] = None
+        self.torch_compile = torch_compile
 
         os.makedirs(model_save_path, exist_ok=True)
         self.model_save_path : str = model_save_path
@@ -283,11 +285,10 @@ class ForecastBasedModel(nn.Module):
                 # If it keeps decaying to zero, the model is overfitting regime.
                 # if it converges to a non-zero value, there are anomalies in the VAL set.
                 val_loss = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int).sum() / len(session_df)
-
                 eval_results = {
-                    "f1": f1_score(y, pred),
-                    "rc": recall_score(y, pred, zero_division=0),
-                    "pc": precision_score(y, pred, zero_division=1),
+                    "f1": f1_score(y, pred, zero_division=0.),
+                    "rc": recall_score(y, pred, zero_division=0.),
+                    "pc": precision_score(y, pred, zero_division=0.),
                     "top{}-acc".format(topk): window_topk_acc,
                     "top{}-loss".format(topk): val_loss,
                 }
@@ -306,6 +307,7 @@ class ForecastBasedModel(nn.Module):
                     best_f1 = eval_results["f1"]
             count_end = time.time()
             logger.info("Finish counting [{:.2f}s]".format(count_end - count_start))
+            
             return best_result
 
     def __input2device(self, batch_input) -> dict:
@@ -358,11 +360,14 @@ class ForecastBasedModel(nn.Module):
         worse_count = 0
         loss_history, f1_history, topkloss_val_hist = [], [], []
 
+        if self.torch_compile:
+            model = torch.compile(self)
+
         for epoch in tqdm(range(1, epochs + 1), disable = not self.log_epochs):
             epoch_time_start = time.time()
             model = self.train()
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
+                        
             batch_cnt = 0
             epoch_loss = 0
             for batch_input in train_loader:
