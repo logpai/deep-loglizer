@@ -14,6 +14,7 @@ import pickle
 import re
 import logging
 from tqdm import tqdm
+from ordered_set import OrderedSet
 
 logger = logging.getLogger("deeploglizer")
 
@@ -342,14 +343,14 @@ class FeatureExtractor(BaseEstimator):
         total_logs = list(
             itertools.chain(*[v["templates"] for k, v in session_dict.items()])
         )
-        self.ulog_train = set(total_logs)
+        self.ulog_train = OrderedSet(total_logs)
+        
         self.id2log_train = {0: log_padding, 1: log_oov}
 
         if self.left_padding:
             self.id2log_train.update({2: "<left_pad>"})
             n_pad = 3
         
-        breakpoint()
         self.id2log_train.update(
             {idx: log for idx, log in enumerate(self.ulog_train, n_pad)}
         )
