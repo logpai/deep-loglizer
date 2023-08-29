@@ -15,8 +15,9 @@ import re
 import logging
 from tqdm import tqdm
 from ordered_set import OrderedSet
+from loguru import logger
 
-logger = logging.getLogger("deeploglizer")
+# logger = logging.getLogger("deeploglizer")
 
 
 from deeploglizer.common.utils import (
@@ -164,6 +165,7 @@ class FeatureExtractor(BaseEstimator):
         pretrain_path=None,
         use_tfidf=False,
         cache=False,
+        tqdm_log=False,
         **kwargs,
     ):
         self.label_type = label_type
@@ -179,6 +181,7 @@ class FeatureExtractor(BaseEstimator):
         self.max_token_len = max_token_len
         self.min_token_count = min_token_count
         self.cache = cache
+        self.tqdm_log = tqdm_log
         self.vocab = Vocab(max_token_len, min_token_count)
         self.meta_data = {}
 
@@ -338,10 +341,9 @@ class FeatureExtractor(BaseEstimator):
         log_padding = "<pad>"
         log_oov = "<oov>"
         n_pad = 2
-
         # encode
         total_logs = list(
-            itertools.chain(*[v["templates"] for k, v in session_dict.items()])
+            itertools.chain(*[v["templates"] for k, v in tqdm(session_dict.items())])
         )
         self.ulog_train = OrderedSet(total_logs)
         
@@ -352,7 +354,7 @@ class FeatureExtractor(BaseEstimator):
             n_pad = 3
         
         self.id2log_train.update(
-            {idx: log for idx, log in enumerate(self.ulog_train, n_pad)}
+            {idx: log for idx, log in tqdm(enumerate(self.ulog_train, n_pad), disable= not self.tqdm_log )}
         )
         self.log2id_train = {v: k for k, v in self.id2log_train.items()}
         logger.debug(f"templates found: {str(self.log2id_train)}")
@@ -449,7 +451,7 @@ class FeatureExtractor(BaseEstimator):
             log2idx["PADDING"] = np.zeros(indice.shape[1]).reshape(-1)
             logger.info("Extracting semantic features.")
 
-        for session_id, data_dict in session_dict.items():
+        for session_id, data_dict in tqdm(session_dict.items(), disable= not self.tqdm_log):
             feature_dict = defaultdict(list)
             windows = data_dict["windows"]
             # generate sequential features # sliding windows on logid list

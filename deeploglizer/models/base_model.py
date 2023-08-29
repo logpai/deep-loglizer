@@ -12,6 +12,7 @@ from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_sc
 from tqdm import tqdm
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from loguru import logger
+from typing import Callable
 
 logger = logging.getLogger("deeploglizer")
 warn_flag = True
@@ -282,7 +283,8 @@ class ForecastBasedModel(nn.Module):
                 #Metric for fully unsupervised setting
                 # For each window (row), score is 0 if actual logk, window_labels, is in topk predictions, 1 otherwise
                 # This metric should converge to a value with increasing epochs. 
-                # If it keeps decaying to zero, the model is overfitting regime.
+                # If it keeps decaying to zero, VAL closely tracks TRAIN, and both have no anomalies. 
+                # A sort of overfitting regime, which may be a good if there are effectively no anomalies in TRAIN/VAL.
                 # if it converges to a non-zero value, there are anomalies in the VAL set.
                 val_loss = (session_df[f"window_pred_anomaly_{topk}"] > 0).astype(int).sum() / len(session_df)
                 eval_results = {
@@ -343,10 +345,19 @@ class ForecastBasedModel(nn.Module):
         test_loader: Optional[DataLoader] = None,
         epochs: int = 10,
         learning_rate: float = 1.0e-3,
+        callback: Callable | None = None
     ) -> Optional[dict]:
-        """fit model on data
-        performs early stop based on test-f1 score
-        returns dict with best results metrics
+        """Fit model on data
+        
+        Performs early stop based on test-f1 score (only if there are labels)
+
+        Args:
+            callback: Callback function at the end of an epoch, if defined. 
+                Signature must be : callback(train_loss, test_topk_loss, iter)
+
+        Returns:
+            dict with best results metrics
+        
         """
 
         self.to(self.device)
@@ -404,6 +415,9 @@ class ForecastBasedModel(nn.Module):
                     if worse_count >= self.patience:
                         logger.info("Early stop at epoch: {}".format(epoch))
                         break
+            
+            if callback:
+                callback(loss_history[-1], topkloss_val_hist[-1], epoch)
             
         if self.output_all:
             best_results.update(
