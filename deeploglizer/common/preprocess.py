@@ -12,12 +12,10 @@ from sklearn.base import BaseEstimator
 import hashlib
 import pickle
 import re
-import logging
 from tqdm import tqdm
 from ordered_set import OrderedSet
 from loguru import logger
 
-# logger = logging.getLogger("deeploglizer")
 
 
 from deeploglizer.common.utils import (
@@ -64,7 +62,7 @@ class Vocab:
         return word_lst
 
     def gen_pretrain_matrix(self, pretrain_path):
-        logging.info("Generating a pretrain matrix.")
+        logger.info("Generating a pretrain matrix.")
         word_vec_dict = load_vectors(pretrain_path)
         vocab_size = len(self.word2idx)
         pretrain_matrix = np.zeros([vocab_size, 300])

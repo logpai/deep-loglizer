@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="inw-deeploglizer",
-    version="1.7.0",
+    version="1.7.2",
     description="Fork of Deep learning-based log analysis toolkit for automated anomaly detection.",
     author="LOGPAI",
     maintainer="luismavs",

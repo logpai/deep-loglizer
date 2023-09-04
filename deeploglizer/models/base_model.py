@@ -13,9 +13,21 @@ from tqdm import tqdm
 from deeploglizer.common.utils import set_device, tensor2flatten_arr
 from loguru import logger
 from typing import Callable
+import platform
 
-logger = logging.getLogger("deeploglizer")
 warn_flag = True
+
+#rounds very small weights to zero, prevents critical slowdown when training
+#because cpu tries to optimize for that regime
+#this flag is only valid for cpu
+
+FLUSH_SMALL_VALUES = True
+
+if FLUSH_SMALL_VALUES:
+    torch.set_flush_denormal(True)
+    if platform.system():
+        logger.info(f'Flush small values status in mac: {torch.set_flush_denormal(True)}')
+
 
 class Embedder(nn.Module):
     def __init__(

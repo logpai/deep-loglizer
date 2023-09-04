@@ -7,7 +7,6 @@ Authors:
 
 """
 
-import logging
 import pandas as pd
 import os
 import numpy as np
@@ -17,10 +16,8 @@ import json
 from collections import OrderedDict, defaultdict
 from typing import Tuple
 from torch.utils.data import Dataset
-
+from loguru import logger
 from deeploglizer.common.utils import decision
-
-logger = logging.getLogger("deeploglizer")
 
 
 def load_sessions(data_dir:str) -> Tuple[dict, dict]:
